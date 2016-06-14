@@ -11,6 +11,6 @@ public:
   std::vector<cv::Point2f> applyDetector(cv::Mat image){
     return std::vector<cv::Point2f>();
   };
-};
 
+};
 }
