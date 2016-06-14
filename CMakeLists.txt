@@ -55,5 +55,5 @@ add_subdirectory(${source_path})
 ###############
 ## TEST PATH ##
 ###############
-# enable_testing()
-# add_subdirectory(${test_path})
+enable_testing()
+add_subdirectory(${test_path})

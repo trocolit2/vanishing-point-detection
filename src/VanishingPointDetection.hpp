@@ -1,7 +1,7 @@
 #include <opencv2/core/core.hpp>
 #include <vector>
 
-namespeace vanishing_point{
+namespace vanishing_point{
 
 class VanishingPointDetection{
 
