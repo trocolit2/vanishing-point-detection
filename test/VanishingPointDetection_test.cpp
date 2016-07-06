@@ -1,119 +1,119 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE "VanishingPointDetection_test"
 
-#include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/test/unit_test_suite.hpp>
+
+#include <iostream>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <VanishingPointDetection.hpp>
 #include <VanishingPointDetectionTools.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 #define YUD_PATH "../../../resource/yud_dataset/"
+#define EURASIAN_PATH "../../../resource/eurasiancitiesbase/"
 
 using namespace vanishing_point;
 
-BOOST_AUTO_TEST_CASE(standardVanishingPoint_testeCase){
+template <typename T> std::string numberToString(T number) {
+  std::ostringstream ss;
+  ss << number;
+  return ss.str();
+}
 
-  VanishingPointDetection* detector = new VanishingPointDetection();
+template <typename T>
+std::string numberToString(T number, unsigned int number_zeros) {
+  std::string raw_number = numberToString(number);
+  unsigned int extra_zeros = number_zeros - raw_number.length();
+  for (unsigned int i = 0; i < extra_zeros; i++) {
+    raw_number = "0" + raw_number;
+  }
+  return raw_number;
+}
+
+BOOST_AUTO_TEST_CASE(standardVanishingPoint_testeCase) {
+
+  VanishingPointDetection *detector = new VanishingPointDetection();
   std::vector<cv::Point2f> out = detector->applyDetector(cv::Mat());
 
   BOOST_CHECK_EQUAL(0, out.size());
 }
 
-BOOST_AUTO_TEST_CASE(drawOrthogonalVP_testeCase){
+BOOST_AUTO_TEST_CASE(drawOrthogonalVP_testeCase) {
 
-  cv::Mat3b temp_image = cv::Mat3b::zeros(500,500);
+  cv::Mat3b temp_image = cv::Mat3b::zeros(500, 500);
   std::vector<cv::Point2f> points;
-  points.push_back(cv::Point2f(400,230)); //VP X -> RED
-  points.push_back(cv::Point2f(100,200)); //VP Y -> GREEN
-  points.push_back(cv::Point2f(250,400)); //VP Z -> BLUE
+  points.push_back(cv::Point2f(400, 230)); // VP X -> RED
+  points.push_back(cv::Point2f(100, 200)); // VP Y -> GREEN
+  points.push_back(cv::Point2f(250, 400)); // VP Z -> BLUE
 
-  temp_image = drawOrthogonalVP(temp_image,points,false);
-
+  cv::Point2f principal_point(temp_image.cols / 2, temp_image.rows / 2);
+  temp_image = drawOrthogonalVP(temp_image, points, principal_point);
   std::vector<cv::Mat> channels;
   cv::split(temp_image, channels);
-
   for (unsigned int i = 0; i < points.size(); i++) {
     cv::Point max_point;
-    cv::minMaxLoc(channels[2 - i], 0,0, 0, &max_point);
+    cv::minMaxLoc(channels[2 - i], 0, 0, 0, &max_point);
     BOOST_CHECK_CLOSE(points[i].x, max_point.x, 3.0);
     BOOST_CHECK_CLOSE(points[i].y, max_point.y, 3.0);
   }
 }
 
-BOOST_AUTO_TEST_CASE(checkYUDDataset_testCase){
+BOOST_AUTO_TEST_CASE(checkYUDDataset_testCase) {
 
-  std::string image_path = std::string(YUD_PATH) + "YUD_0000.jpg";
-  std::string gt_path = std::string(YUD_PATH) + "vpd_gt.yml";
+  std::string gt_path = std::string(YUD_PATH) + "gt_data.yml";
 
-  cv::Mat yud_image;
-  yud_image = cv::imread(image_path);
-
-  cv::Mat raw_gt, camera_params;
+  cv::Mat raw_horizon_lines_gt;
   cv::FileStorage fs(gt_path, cv::FileStorage::READ);
-  fs["vpd_gt"] >> raw_gt;
-  std::cout << " out vpd " << raw_gt <<std::endl;
-  cv::Mat1f yud_gt(raw_gt);
+  fs["horizon_lines"] >> raw_horizon_lines_gt;
+  std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
 
-  cv::Point2f size_image(yud_image.cols,yud_image.rows);
-  cv::Point2f center_image(size_image.x/2,size_image.y/2);
+  cv::Mat1f horizon_lines_gt(raw_horizon_lines_gt);
 
-  std::vector<cv::Point2f> points(3), m_points(3), t_points(3);
-  unsigned int k=0;
-  points[0] = cv::Point2f(yud_gt[k][0]/yud_gt[k][2],yud_gt[k][1]/yud_gt[k][2]);
-  points[1] = cv::Point2f(yud_gt[k][3]/yud_gt[k][5],yud_gt[k][4]/yud_gt[k][5]);
-  points[2] = cv::Point2f(yud_gt[k][6]/yud_gt[k][8],yud_gt[k][7]/yud_gt[k][8]);
+  std::vector<cv::Point2f> points(3);
+  std::vector<cv::Point3f> points_3d(3);
 
-  m_points[0] = cv::Point2f(points[0].x*size_image.x,points[0].y*size_image.y);
-  m_points[1] = cv::Point2f(points[1].x*size_image.x,points[1].y*size_image.y);
-  m_points[2] = cv::Point2f(points[2].x*size_image.x,points[2].y*size_image.y);
+  for (unsigned int k = 0; k < horizon_lines_gt.rows; k++) {
+    std::string path_image =
+        std::string(YUD_PATH) + numberToString(k + 1, 3) + ".jpg";
 
-  t_points[0] = m_points[0]+center_image;
-  t_points[1] = m_points[1]+center_image;
-  t_points[2] = m_points[2]+center_image;
+    std::cout << " path_image " << path_image << std::endl;
+    cv::Mat yud_image = cv::imread(path_image);
+    cv::Point3f horizon_line(horizon_lines_gt[k][0], horizon_lines_gt[k][1],
+                             horizon_lines_gt[k][2]);
 
-  std::cout <<"FIRST:"
-            <<"\nP0 "<<points[0]<<" "<<m_points[0]<<" "<<t_points[0]
-            <<"\nP1 "<<points[1]<<" "<<m_points[1]<<" "<<t_points[1]
-            <<"\nP2 "<<points[2]<<" "<<m_points[2]<<" "<<t_points[2]
-            <<std::endl;
+    drawHorizonLine(yud_image, horizon_line);
+    cv::imshow("horizon line YUD", yud_image);
+    cv::waitKey(1);
+  }
+}
 
-  // yud_image = drawOrthogonalVP(yud_image,m_points);
-  yud_image = drawOrthogonalVP(yud_image,t_points);
-  cv::imshow("out YUD FIRST",yud_image);
+BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
 
-// second test
-  // points[0] = cv::Point2f(yud_gt[k][0],yud_gt[k][1]);
-  // points[1] = cv::Point2f(yud_gt[k][3],yud_gt[k][4]);
-  // points[2] = cv::Point2f(yud_gt[k][6],yud_gt[k][7]);
-  //
-  // m_points[0] = cv::Point2f(points[0].x*size_image.x,points[0].y*size_image.y);
-  // m_points[1] = cv::Point2f(points[1].x*size_image.x,points[1].y*size_image.y);
-  // m_points[2] = cv::Point2f(points[2].x*size_image.x,points[2].y*size_image.y);
-  //
-  // std::cout <<"SECOND:"
-  //           <<"\nP0 "<<points[0]<<" "<<m_points[0]
-  //           <<"\nP1 "<<points[1]<<" "<<m_points[1]
-  //           <<"\nP2 "<<points[2]<<" "<<m_points[2]
-  //           <<std::endl;
-  //
-  // yud_image = drawOrthogonalVP(yud_image,m_points);
-  // cv::imshow("out YUD SECOND",yud_image);
-  // cv::waitKey();
+  std::string gt_path = std::string(EURASIAN_PATH) + "gt_data.yml";
 
-  // points[0] = cv::Point2f(points[0].x*size_image.x,points[0].y*size_image.y);
-  // points[0] = points[0]+center_image;
-  //
-  // points[1] = cv::Point2f(points[1].x*size_image.x,points[1].y*size_image.y);
-  // points[1] = points[1]+center_image;
-  //
-  // points[2] = cv::Point2f(points[2].x*size_image.x,points[2].y*size_image.y);
-  // points[2] = points[2]+center_image;
-  //
-  // std::cout<<"P0 "<<points[0]<<"\nP1 "<<points[1]<<"\nP2 "<<points[2]<<std::endl;
-  //
-  // yud_image = drawOrthogonalVP(yud_image,points);
-  // cv::imshow("out YUD",yud_image);
-  cv::waitKey();
+  cv::Mat raw_horizon_lines_gt;
+  cv::FileStorage fs(gt_path, cv::FileStorage::READ);
+  fs["horizon_lines"] >> raw_horizon_lines_gt;
+  std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
+
+  cv::Mat1f horizon_lines_gt(raw_horizon_lines_gt);
+
+  std::vector<cv::Point2f> points(3);
+  std::vector<cv::Point3f> points_3d(3);
+
+  for (unsigned int k = 0; k < horizon_lines_gt.rows; k++) {
+    std::string path_image =
+        std::string(EURASIAN_PATH) + numberToString(k + 1, 3) + ".jpg";
+
+    std::cout << " path_image " << path_image << std::endl;
+    cv::Mat yud_image = cv::imread(path_image);
+    cv::Point3f horizon_line(horizon_lines_gt[k][0], horizon_lines_gt[k][1],
+                             horizon_lines_gt[k][2]);
+
+    drawHorizonLine(yud_image, horizon_line);
+    cv::imshow("horizon line YUD", yud_image);
+    cv::waitKey();
+  }
 }
