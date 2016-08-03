@@ -11,8 +11,8 @@
 #include <VanishingPointDetection.hpp>
 #include <VanishingPointDetectionTools.hpp>
 
-#define YUD_PATH "../../../resource/yud_dataset/"
-#define EURASIAN_PATH "../../../resource/eurasiancitiesbase/"
+#define YUD_PATH "../../../resource/datasets/yorkurban/"
+#define EURASIAN_PATH "../../../resource/datasets/eurasiancities/"
 
 using namespace vanishing_point;
 
@@ -40,6 +40,36 @@ BOOST_AUTO_TEST_CASE(standardVanishingPoint_testeCase) {
   BOOST_CHECK_EQUAL(0, out.size());
 }
 
+BOOST_AUTO_TEST_CASE(checkEuclidianLineIntersection_testcase) {
+
+  std::vector<cv::Point3f> lines_initial{
+      cv::Point3f(2, 1, -4), cv::Point3f(1, 4, -7), cv::Point3f(2, 1, -3),
+      cv::Point3f(0.44, -1, 3.4), cv::Point3f(2.25, -1, -85.2)};
+
+  std::vector<cv::Point3f> lines_final{
+      cv::Point3f(1, -1, 1), cv::Point3f(3, 1, 1), cv::Point3f(6, 5, 1),
+      cv::Point3f(0.44, -1, -7.8), cv::Point3f(2.25, -1, -85.2)};
+
+  std::vector<cv::Point2f> intersection_points{
+      cv::Point2f(1, 2), cv::Point2f(-1, 2), cv::Point2f(4, -5),
+      cv::Point2f(nanf(""), nanf("")), cv::Point2f(26.5, -25.5)};
+
+  for (int i = 0; i < lines_initial.size(); ++i) {
+    cv::Point2f final_point = definePointByEuclidianLinesIntersection(
+        lines_initial[i], lines_final[i]);
+
+    if (std::isnan(intersection_points[i].x)) {
+      BOOST_CHECK_EQUAL(std::isnan(intersection_points[i].x),
+                        std::isnan(final_point.x));
+      BOOST_CHECK_EQUAL(std::isnan(intersection_points[i].y),
+                        std::isnan(final_point.y));
+    } else {
+      BOOST_CHECK_CLOSE(intersection_points[i].x, final_point.x, 1.0);
+      BOOST_CHECK_CLOSE(intersection_points[i].y, final_point.y, 1.0);
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(drawOrthogonalVP_testeCase) {
 
   cv::Mat3b temp_image = cv::Mat3b::zeros(500, 500);
@@ -55,8 +85,10 @@ BOOST_AUTO_TEST_CASE(drawOrthogonalVP_testeCase) {
   for (unsigned int i = 0; i < points.size(); i++) {
     cv::Point max_point;
     cv::minMaxLoc(channels[2 - i], 0, 0, 0, &max_point);
-    BOOST_CHECK_CLOSE(points[i].x, max_point.x, 3.0);
-    BOOST_CHECK_CLOSE(points[i].y, max_point.y, 3.0);
+    if (i % 2)
+      BOOST_CHECK_CLOSE(points[i].y, max_point.y, 3.0);
+    else
+      BOOST_CHECK_CLOSE(points[i].x, max_point.x, 3.0);
   }
 }
 
@@ -67,7 +99,7 @@ BOOST_AUTO_TEST_CASE(checkYUDDataset_testCase) {
   cv::Mat raw_horizon_lines_gt;
   cv::FileStorage fs(gt_path, cv::FileStorage::READ);
   fs["horizon_lines"] >> raw_horizon_lines_gt;
-  std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
+  // std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
 
   cv::Mat1f horizon_lines_gt(raw_horizon_lines_gt);
 
@@ -78,14 +110,14 @@ BOOST_AUTO_TEST_CASE(checkYUDDataset_testCase) {
     std::string path_image =
         std::string(YUD_PATH) + numberToString(k + 1, 3) + ".jpg";
 
-    std::cout << " path_image " << path_image << std::endl;
+    // std::cout << " path_image " << path_image << std::endl;
     cv::Mat yud_image = cv::imread(path_image);
     cv::Point3f horizon_line(horizon_lines_gt[k][0], horizon_lines_gt[k][1],
                              horizon_lines_gt[k][2]);
 
-    drawHorizonLine(yud_image, horizon_line);
-    cv::imshow("horizon line YUD", yud_image);
-    cv::waitKey(1);
+    yud_image = drawHorizonLine(yud_image, horizon_line);
+    // cv::imshow("horizon line York Urban", yud_image);
+    // cv::waitKey();
   }
 }
 
@@ -93,12 +125,14 @@ BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
 
   std::string gt_path = std::string(EURASIAN_PATH) + "gt_data.yml";
 
-  cv::Mat raw_horizon_lines_gt;
+  cv::Mat raw_horizon_lines_gt, raw_zenith_gt;
   cv::FileStorage fs(gt_path, cv::FileStorage::READ);
   fs["horizon_lines"] >> raw_horizon_lines_gt;
-  std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
+  fs["zenith"] >> raw_zenith_gt;
+  //  std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
 
   cv::Mat1f horizon_lines_gt(raw_horizon_lines_gt);
+  cv::Mat1f zenith_gt(raw_zenith_gt);
 
   std::vector<cv::Point2f> points(3);
   std::vector<cv::Point3f> points_3d(3);
@@ -107,13 +141,15 @@ BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
     std::string path_image =
         std::string(EURASIAN_PATH) + numberToString(k + 1, 3) + ".jpg";
 
-    std::cout << " path_image " << path_image << std::endl;
-    cv::Mat yud_image = cv::imread(path_image);
+    // std::cout << " path_image " << path_image << std::endl;
+    cv::Mat image = cv::imread(path_image);
     cv::Point3f horizon_line(horizon_lines_gt[k][0], horizon_lines_gt[k][1],
                              horizon_lines_gt[k][2]);
-
-    drawHorizonLine(yud_image, horizon_line);
-    cv::imshow("horizon line YUD", yud_image);
-    cv::waitKey();
+    cv::Point2f zenith(zenith_gt[k][0], zenith_gt[k][1]);
+    cv::Point2f principal_point(image.cols / 2, image.rows / 2);
+    image = drawHorizonLine(image, horizon_line);
+    image = drawZenithLine(image, zenith, principal_point);
+    // cv::imshow("horizon line Euroasian Cites", image);
+    // cv::waitKey();
   }
 }
