@@ -40,6 +40,27 @@ BOOST_AUTO_TEST_CASE(standardVanishingPoint_testeCase) {
   BOOST_CHECK_EQUAL(0, out.size());
 }
 
+BOOST_AUTO_TEST_CASE(checkEuclidianLineBy2Points_testcase) {
+
+  std::vector<cv::Point2f> points_initial{cv::Point2f(2, 3), cv::Point2f(2, 3),
+                                          cv::Point2f(2, 3)};
+
+  std::vector<cv::Point2f> points_final{cv::Point2f(5, 7), cv::Point2f(8, 6),
+                                        cv::Point2f(6, 4)};
+
+  std::vector<cv::Point3f> lines{cv::Point3f(1.33, -1, 0.33333),
+                                 cv::Point3f(0.5, -1, 2),
+                                 cv::Point3f(1.0 / 4, -1, 5.0 / 2)};
+
+  for (int i = 0; i < points_initial.size(); ++i) {
+    cv::Point3f out =
+        defineEuclidianLineBy2Points(points_initial[i], points_final[i]);
+    BOOST_CHECK_CLOSE(lines[i].x, out.x, 1.0);
+    BOOST_CHECK_CLOSE(lines[i].y, out.y, 1.0);
+    BOOST_CHECK_CLOSE(lines[i].z, out.z, 1.0);
+  }
+}
+
 BOOST_AUTO_TEST_CASE(checkEuclidianLineIntersection_testcase) {
 
   std::vector<cv::Point3f> lines_initial{
@@ -147,9 +168,15 @@ BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
                              horizon_lines_gt[k][2]);
     cv::Point2f zenith(zenith_gt[k][0], zenith_gt[k][1]);
     cv::Point2f principal_point(image.cols / 2, image.rows / 2);
+
+    cv::Point3f zenith_line =
+        defineEuclidianLineBy2Points(zenith, principal_point);
+    cv::Point2f intersection_point =
+        definePointByEuclidianLinesIntersection(horizon_line, zenith_line);
+
     image = drawHorizonLine(image, horizon_line);
-    image = drawZenithLine(image, zenith, principal_point);
-    // cv::imshow("horizon line Euroasian Cites", image);
-    // cv::waitKey();
+    image = drawZenithLine(image, zenith, principal_point, intersection_point);
+    cv::imshow("horizon line Euroasian Cites", image);
+    cv::waitKey();
   }
 }
