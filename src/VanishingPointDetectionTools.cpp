@@ -29,9 +29,10 @@ cv::Mat drawHorizonLine(cv::Mat original_image, cv::Point3f line) {
   return image;
 }
 
-cv::Mat drawZenithLine(cv::Mat original_image, cv::Point2f zenith_point,
-                       cv::Point2f central_point,
-                       cv::Point2f intersection_point) {
+cv::Mat drawZenithLine( cv::Mat original_image,
+                        cv::Point2f zenith_point,
+                        cv::Point2f central_point,
+                        cv::Point2f intersection_point) {
 
   cv::Mat image;
   original_image.copyTo(image);
@@ -39,18 +40,21 @@ cv::Mat drawZenithLine(cv::Mat original_image, cv::Point2f zenith_point,
   cv::Scalar yellow(0, 255, 255);
   cv::Scalar purple(255, 0, 255);
 
-  std::cout << " Zenith " << zenith_point << std::endl;
-  std::cout << " Central " << central_point << std::endl;
-  std::cout << " INTERS " << intersection_point << "\n" << std::endl;
-
   cv::Point2f end_point;
-  central_point.y < intersection_point.y ? end_point = intersection_point
-                                         : end_point = central_point;
+
+  if( central_point.y > zenith_point.y ){
+    central_point.y < intersection_point.y ? end_point = intersection_point
+                                           : end_point = central_point;
+  }else{
+    central_point.y < intersection_point.y ? end_point = central_point
+                                           : end_point = intersection_point;
+  }
+
 
   cv::line(image, zenith_point, end_point, yellow, image.rows * 0.004);
 
-  cv::circle(image, zenith_point, image.rows * 0.008, black, 3);
-  cv::circle(image, zenith_point, image.rows * 0.008, yellow, -1);
+  // cv::circle(image, zenith_point, image.rows * 0.008, black, 3);
+  cv::circle(image, zenith_point, image.rows * 0.004, yellow, -1);
 
   cv::circle(image, central_point, image.rows * 0.008, black, 3);
   cv::circle(image, central_point, image.rows * 0.008, yellow, -1);
@@ -60,6 +64,29 @@ cv::Mat drawZenithLine(cv::Mat original_image, cv::Point2f zenith_point,
 
   return image;
 }
+
+cv::Point3f adjustPointsToDraw( cv::Point2f zenith_point,
+                                cv::Point2f principal_point,
+                                cv::Point3f horizon_line,
+                                cv::Point2f *intersection_point,
+                                cv::Point2f *zenith_local){
+  cv::Point3f zenith_line =
+    defineEuclidianLineBy2Points(zenith_point, principal_point);
+  (*intersection_point) =
+    definePointByEuclidianLinesIntersection(horizon_line, zenith_line);
+
+  if( zenith_point.y < 0 )
+    (*zenith_local) = cv::Point2f(-zenith_line.z / zenith_line.x, 0);
+  else if( zenith_point.y > (principal_point.y * 2) )
+    (*zenith_local) =
+      cv::Point2f(((principal_point.y * 2) - zenith_line.z )/ zenith_line.x,
+                  (principal_point.y * 2));
+  else
+    (*zenith_local) = zenith_point;
+
+return zenith_line;
+}
+
 
 cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
                                          cv::Point2f point_final) {

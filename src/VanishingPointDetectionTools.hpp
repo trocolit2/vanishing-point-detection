@@ -12,6 +12,13 @@ cv::Mat drawZenithLine(cv::Mat original_image, cv::Point2f zenith_point,
                        cv::Point2f central_point,
                        cv::Point2f intersection_point);
 
+cv::Point3f adjustPointsToDraw( cv::Point2f zenith_point,
+                                cv::Point2f principal_point,
+                                cv::Point3f horizon_line,
+                                cv::Point2f *intersection_point,
+                                cv::Point2f *zenith_local);
+
+
 cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
                                          cv::Point2f point_final);
 
