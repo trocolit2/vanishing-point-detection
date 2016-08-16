@@ -113,6 +113,48 @@ BOOST_AUTO_TEST_CASE(drawOrthogonalVP_testeCase) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(chechAdjustPointsToDraw_testCase){
+
+  std::vector< cv::Point2f > zenith_vector = {
+    cv::Point2f(200, 300), cv::Point2f(330, 200),
+    cv::Point2f(250, -10), cv::Point2f(250, 510)};
+  std::vector< cv::Point3f > horizon_vector = {
+    cv::Point3f(-0.05, -1, 310), cv::Point3f(0.10, -1, 170),
+    cv::Point3f(0.08, -1, 400), cv::Point3f(-0.10, -1, 100)};
+
+  std::vector< cv::Point3f > gt_zenith_line = {
+    cv::Point3f(-1, -1, 500), cv::Point3f(-0.625, -1, 406.25),
+    cv::Point3f(-1, 0, 250), cv::Point3f(-1, 0, 250)};
+  std::vector< cv::Point2f > gt_zenith_local = {
+    cv::Point2f(200, 300), cv::Point2f(330, 200),
+    cv::Point2f(250, 0), cv::Point2f(250, 500)};
+  std::vector< cv::Point2f > gt_intersection = {
+    cv::Point2f(200, 300), cv::Point2f(325.86, 202.58),
+    cv::Point2f(250, 420), cv::Point2f(250, 75)};
+
+  cv::Mat3b image = cv::Mat3b::zeros(500,500);
+  cv::Point2f principal_point(image.cols/2, image.rows/2);
+
+  for (int i = 0; i < 4; i++) {
+    cv::Point2f intersection_point, zenith_local;
+    cv::Point3f zenith_line = adjustPointsToDraw( zenith_vector[i],
+      principal_point, horizon_vector[i], &intersection_point, &zenith_local);
+
+    BOOST_CHECK_CLOSE(gt_zenith_line[i].x, zenith_line.x, 0.1);
+    BOOST_CHECK_CLOSE(gt_zenith_line[i].y, zenith_line.y, 0.1);
+    BOOST_CHECK_CLOSE(gt_zenith_line[i].z, zenith_line.z, 0.1);
+
+    BOOST_CHECK_CLOSE(gt_zenith_local[i].x, zenith_local.x, 0.1);
+    BOOST_CHECK_CLOSE(gt_zenith_local[i].y, zenith_local.y, 0.1);
+
+    BOOST_CHECK_CLOSE(gt_intersection[i].x, intersection_point.x, 0.1);
+    BOOST_CHECK_CLOSE(gt_intersection[i].y, intersection_point.y, 0.1);
+
+  }
+
+}
+
+
 BOOST_AUTO_TEST_CASE(checkYUDDataset_testCase) {
 
   std::string gt_path = std::string(YUD_PATH) + "gt_data.yml";
@@ -136,7 +178,7 @@ BOOST_AUTO_TEST_CASE(checkYUDDataset_testCase) {
     cv::Point3f horizon_line(horizon_lines_gt[k][0], horizon_lines_gt[k][1],
                              horizon_lines_gt[k][2]);
 
-    yud_image = drawHorizonLine(yud_image, horizon_line);
+    // yud_image = drawHorizonLine(yud_image, horizon_line);
     // cv::imshow("horizon line York Urban", yud_image);
     // cv::waitKey();
   }
@@ -169,14 +211,16 @@ BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
     cv::Point2f zenith(zenith_gt[k][0], zenith_gt[k][1]);
     cv::Point2f principal_point(image.cols / 2, image.rows / 2);
 
-    cv::Point3f zenith_line =
-        defineEuclidianLineBy2Points(zenith, principal_point);
-    cv::Point2f intersection_point =
-        definePointByEuclidianLinesIntersection(horizon_line, zenith_line);
+    cv::Point2f intersection_point, zenith_local;
+    // cv::Point3f zenith_line = adjustPointsToDraw( zenith,
+    //                                               principal_point,
+    //                                               horizon_line,
+    //                                               &intersection_point,
+    //                                               &zenith_local);
 
-    image = drawHorizonLine(image, horizon_line);
-    image = drawZenithLine(image, zenith, principal_point, intersection_point);
-    cv::imshow("horizon line Euroasian Cites", image);
-    cv::waitKey();
+    // image = drawHorizonLine(image, horizon_line);
+    // image = drawZenithLine(image, zenith_local, principal_point, intersection_point);
+    // cv::imshow("horizon line Euroasian Cites", image);
+    // cv::waitKey();
   }
 }

@@ -72,15 +72,25 @@ cv::Point3f adjustPointsToDraw( cv::Point2f zenith_point,
                                 cv::Point2f *zenith_local){
   cv::Point3f zenith_line =
     defineEuclidianLineBy2Points(zenith_point, principal_point);
+
   (*intersection_point) =
     definePointByEuclidianLinesIntersection(horizon_line, zenith_line);
 
+
   if( zenith_point.y < 0 )
-    (*zenith_local) = cv::Point2f(-zenith_line.z / zenith_line.x, 0);
+    if(zenith_line.y == 0)
+      (*zenith_local) = cv::Point2f(principal_point.x, 0);
+    else
+      (*zenith_local) = cv::Point2f(-zenith_line.z / zenith_line.x, 0);
+
   else if( zenith_point.y > (principal_point.y * 2) )
-    (*zenith_local) =
-      cv::Point2f(((principal_point.y * 2) - zenith_line.z )/ zenith_line.x,
-                  (principal_point.y * 2));
+    if(zenith_line.y == 0)
+      (*zenith_local) = cv::Point2f(principal_point.x,
+                                    principal_point.y * 2);
+    else
+      (*zenith_local) =
+        cv::Point2f (((principal_point.y * 2) - zenith_line.z )/ zenith_line.x,
+                    (principal_point.y * 2));
   else
     (*zenith_local) = zenith_point;
 
@@ -91,11 +101,19 @@ return zenith_line;
 cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
                                          cv::Point2f point_final) {
 
-  float slope =
-      (point_final.y - point_inital.y) / (point_final.x - point_inital.x);
-  float intercept = point_inital.y - slope * point_inital.x;
+  float delta_X = point_final.x - point_inital.x;
+  float slope,  intercept;
+  cv::Point3f line;
 
-  return cv::Point3f(slope, -1, intercept);
+  if( delta_X != 0 ){
+    slope = (point_final.y - point_inital.y) / delta_X;
+    intercept = point_inital.y - slope * point_inital.x;
+    line = cv::Point3f(slope, -1, intercept);
+  }else{
+    line = cv::Point3f(-1, 0, point_final.x);
+  }
+
+  return line;
 }
 
 cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
