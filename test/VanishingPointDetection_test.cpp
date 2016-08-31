@@ -224,3 +224,69 @@ BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
     // cv::waitKey();
   }
 }
+
+BOOST_AUTO_TEST_CASE(horizonLineEstimation_testCase) {
+
+  cv::Mat3b image = cv::Mat3b::zeros(500,500);
+  std::vector<cv::Point2f> zeniths ={
+                        cv::Point2f(250,-10), cv::Point2f(250,510),
+                        cv::Point2f(200,-10), cv::Point2f(400,510),
+                        cv::Point2f(400,-10), cv::Point2f(200,510)};
+
+  std::vector< std::vector<cv::Point2f> > vps;
+  vps.push_back({ cv::Point2f(100,400), cv::Point2f(200,350),
+                  cv::Point2f(300,310), cv::Point2f(400,410) });
+  vps.push_back({ cv::Point2f(100,100), cv::Point2f(200,150),
+                  cv::Point2f(300,200), cv::Point2f(400,110) });
+  vps.push_back({ cv::Point2f(100,400), cv::Point2f(200,350),
+                  cv::Point2f(300,325), cv::Point2f(400,300) });
+  vps.push_back({ cv::Point2f(100,350), cv::Point2f(200,300),
+                  cv::Point2f(300,250), cv::Point2f(400,200) });
+  vps.push_back({ cv::Point2f(100,200), cv::Point2f(200,350),
+                  cv::Point2f(300,450), cv::Point2f(400,490) });
+  vps.push_back({ cv::Point2f(100,50), cv::Point2f(200,63),
+                  cv::Point2f(300,100), cv::Point2f(400,110) });
+
+  std::vector< std::vector<int> > lines_by_vp;
+  lines_by_vp.push_back({8, 4, 3, 5});
+  lines_by_vp.push_back({3, 5, 2, 9});
+  lines_by_vp.push_back({1, 8, 3, 8});
+  lines_by_vp.push_back({3, 1, 8, 8});
+  lines_by_vp.push_back({2, 4, 6, 8});
+  lines_by_vp.push_back({8, 4, 2, 6});
+
+  std::vector<cv::Point3f> gt_horizon_line = {
+    cv::Point3f(0, -1, 379), cv::Point3f(0, -1, 128.421),
+    cv::Point3f(-0.192308, -1, 384.519), cv::Point3f(-0.576923, -1, 423.462),
+    cv::Point3f(0.576923, -1, 247.923), cv::Point3f(0.192308, -1, 31.3692)};
+
+  float total_samples = 20;
+  float factor = 4;
+  cv::Point2f principal_point(image.cols/2, image.rows/2);
+  for (int i = 0; i < zeniths.size(); i++) {
+    cv::Point3f horizon_line =
+              horizonLineEstimation(zeniths[i], principal_point, vps[i], lines_by_vp[i]);
+
+    BOOST_CHECK_CLOSE(horizon_line.x, gt_horizon_line[i].x, 0.01);
+    BOOST_CHECK_CLOSE(horizon_line.y, gt_horizon_line[i].y, 0.01);
+    BOOST_CHECK_CLOSE(horizon_line.z, gt_horizon_line[i].z, 0.01);
+
+    // Visual Debug
+    // cv::Point2f zenith_local, intersection_point;
+    // adjustPointsToDraw( zeniths[i], principal_point, horizon_line,
+    //                     &intersection_point, &zenith_local);
+
+    // image = drawHorizonLine(image, horizon_line);
+    // image = drawZenithLine( image, zenith_local, principal_point,
+    //                         intersection_point);
+    // for (int j = 0; j < vps[i].size(); j++) {
+    //   cv::Scalar color ((255.0/8) * lines_by_vp[i][j], 0, 0);
+    //   cv::circle(image, vps[i][j], image.rows * 0.01, color, -1);
+    // }
+
+    // cv::imshow("out horizon",image);
+    // cv::waitKey();
+    // image = cv::Mat3b::zeros(500,500);
+  }
+
+}

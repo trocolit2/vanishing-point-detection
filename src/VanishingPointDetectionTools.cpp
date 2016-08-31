@@ -1,4 +1,5 @@
 #include <VanishingPointDetectionTools.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 namespace vanishing_point {
 
@@ -138,4 +139,59 @@ cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
 
   return intersection_point;
 }
+
+cv::Point3f computeHorizonLineByZenithPointAndLineSamples(
+                                      cv::Point3f zenith_line,
+                                      std::vector<cv::Point3f> line_samples){
+  return cv::Point3f();
+
+}
+
+cv::Point3f horizonLineEstimation(cv::Point2f zenith,
+                                  cv::Point2f principal_point,
+                                  std::vector<cv::Point2f> vanishing_points,
+                                  std::vector<int> lines_by_vp,
+                                  cv::Point3f *horizon_without_zenith){
+
+  // define horizon_line slope by zenith_line slope.
+  cv::Point3f zenith_line =
+                  defineEuclidianLineBy2Points(zenith, principal_point);
+
+  // zenith_line slope is horizon_line perpendicular
+  float slope_horizon = fabs(zenith_line.x);
+
+  slope_horizon == 1.0 ?  slope_horizon = 0 :
+                            slope_horizon = -1.0/zenith_line.x;
+
+  // count sample number
+  int total_lines_samples = 0;
+  for (int k = 0; k < lines_by_vp.size(); k++)
+    total_lines_samples+=lines_by_vp[k];
+
+  cv::Mat1f left_mat = cv::Mat1f::ones(total_lines_samples,1);
+  cv::Mat1f right_mat = cv::Mat1f::zeros(total_lines_samples,1);
+
+  //fill matrix with sample values
+  int count = 0;
+  for (int i = 0; i < lines_by_vp.size(); i++) {
+    for (int j = 0; j < lines_by_vp[i]; j++)
+      right_mat[count + j][0] = -slope_horizon * vanishing_points[i].x +
+                                vanishing_points[i].y;
+    count+= lines_by_vp[i];
+  }
+
+  // solve 1D least square to find horizon Y intercept value
+  cv::Mat1f out;
+  cv::solve(left_mat, right_mat, out, cv::DECOMP_NORMAL);
+  cv::Point3f horizon_line(slope_horizon, -1, out[0][0]);
+
+  return horizon_line;
+}
+
+
+
+
+
+
+
 }
