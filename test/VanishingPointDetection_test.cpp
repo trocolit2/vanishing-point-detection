@@ -265,7 +265,8 @@ BOOST_AUTO_TEST_CASE(horizonLineEstimation_testCase) {
   cv::Point2f principal_point(image.cols/2, image.rows/2);
   for (int i = 0; i < zeniths.size(); i++) {
     cv::Point3f horizon_line =
-              horizonLineEstimation(zeniths[i], principal_point, vps[i], lines_by_vp[i]);
+                      horizonLineEstimation(zeniths[i], principal_point,
+                                            vps[i], lines_by_vp[i]);
 
     BOOST_CHECK_CLOSE(horizon_line.x, gt_horizon_line[i].x, 0.01);
     BOOST_CHECK_CLOSE(horizon_line.y, gt_horizon_line[i].y, 0.01);
@@ -275,7 +276,7 @@ BOOST_AUTO_TEST_CASE(horizonLineEstimation_testCase) {
     // cv::Point2f zenith_local, intersection_point;
     // adjustPointsToDraw( zeniths[i], principal_point, horizon_line,
     //                     &intersection_point, &zenith_local);
-
+    //
     // image = drawHorizonLine(image, horizon_line);
     // image = drawZenithLine( image, zenith_local, principal_point,
     //                         intersection_point);
@@ -283,10 +284,58 @@ BOOST_AUTO_TEST_CASE(horizonLineEstimation_testCase) {
     //   cv::Scalar color ((255.0/8) * lines_by_vp[i][j], 0, 0);
     //   cv::circle(image, vps[i][j], image.rows * 0.01, color, -1);
     // }
-
+    //
     // cv::imshow("out horizon",image);
     // cv::waitKey();
     // image = cv::Mat3b::zeros(500,500);
   }
 
+}
+
+BOOST_AUTO_TEST_CASE(normalizedMaxDistanceBetweenHorizonLines_testCase){
+
+  std::vector<cv::Point3f> horizon_line1 = {
+    cv::Point3f(0, -1, 250), cv::Point3f(0.15, -1, 300),
+    cv::Point3f(-0.15, -1, 100), cv::Point3f(-0.15, -1, 100),
+    cv::Point3f(0.15, -1, 100)};
+
+  std::vector<cv::Point3f> horizon_line2 = {
+    cv::Point3f(0, -1, 300), cv::Point3f(0.15, -1, 400),
+    cv::Point3f(-0.15, -1, 200), cv::Point3f(0.15, -1, 400),
+    cv::Point3f(-0.15, -1, 400)};
+
+  std::vector<double> distances = {0.1, 0.2, 0.2, 0.9, 0.6};
+  std::vector<cv::Point2f> point1s = {  cv::Point2f(500,250),
+                  cv::Point2f(500,375), cv::Point2f(500,25),
+                  cv::Point2f(500,25),  cv::Point2f(0,100)};
+  std::vector<cv::Point2f> point2s = {  cv::Point2f(500,300),
+                  cv::Point2f(500,475), cv::Point2f(500,125),
+                  cv::Point2f(500,475), cv::Point2f(0,400)};
+
+  for (int i = 0; i < horizon_line1.size(); i++) {
+    cv::Mat3b image = cv::Mat3b::zeros(500,500);
+    cv::Point2f point1, point2;
+    double distance = normalizedMaxDistanceBetweenHorizonLines(
+      horizon_line1[i], horizon_line2[i], image.size(), &point1, &point2);
+
+    BOOST_CHECK_CLOSE(distance, distances[i], 0.01);
+    BOOST_CHECK_CLOSE(point1.x, point1s[i].x, 0.01);
+    BOOST_CHECK_CLOSE(point1.y, point1s[i].y, 0.01);
+    BOOST_CHECK_CLOSE(point2.x, point2s[i].x, 0.01);
+    BOOST_CHECK_CLOSE(point2.y, point2s[i].y, 0.01);
+
+    // visual debug
+    // image = drawHorizonLine(image, horizon_line1[i]);
+    // image = drawHorizonLine(image, horizon_line2[i], cv::Scalar(0,255,0));
+    // cv::line( image, point1, point2,
+    //           cv::Scalar(0, 255, 255), image.rows * 0.004);
+    // cv::imshow("out image", image);
+    //
+    // std::cout.precision(5);
+    // std::cout << " value "
+    //           << std::fixed << distance << std::endl;
+    // std::cout << " out "<< point1 << " " << point2 << std::endl;
+    //
+    // cv::waitKey();
+  }
 }

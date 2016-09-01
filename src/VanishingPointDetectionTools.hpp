@@ -6,11 +6,13 @@ namespace vanishing_point {
 cv::Mat drawOrthogonalVP(cv::Mat image, std::vector<cv::Point2f> points,
                          cv::Point2f principal_point = cv::Point2f(-1, -1));
 
-cv::Mat drawHorizonLine(cv::Mat image, cv::Point3f line);
+cv::Mat drawHorizonLine(cv::Mat image, cv::Point3f line,
+                        cv::Scalar color = cv::Scalar(255,0,255));
 
-cv::Mat drawZenithLine(cv::Mat original_image, cv::Point2f zenith_point,
-                       cv::Point2f principal_point,
-                       cv::Point2f intersection_point);
+cv::Mat drawZenithLine( cv::Mat original_image,
+                        cv::Point2f zenith_point,
+                        cv::Point2f principal_point,
+                        cv::Point2f intersection_point);
 
 cv::Point3f adjustPointsToDraw( cv::Point2f zenith_point,
                                 cv::Point2f principal_point,
@@ -32,14 +34,15 @@ cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
 // How to estimate error by horizon line
 //   We therefore focused on the accuracy of the horizon estimation.
 // Assume that the horizon is given as a (linear) function H(x) of a
-// pixel  x-coordinate. Assume that H0(x) and H1(x) are the ground truth and
-// the estimated horizon. We de ne the estimation error as the maximum
+// pixel x-coordinate. Assume that H0(x) and H1(x) are the ground truth and
+// the estimated horizon. We define the estimation error as the maximum
 // euclidean distance between the lines H0(x) and H1(x) within the image
 // domain (0 < x < image width),  divided  by  the  image  height.
-double normalizedDistanceBetweenHorizonLines( cv::Point3f horizon_line,
-                                              cv::Point3f gt_horizon_line,
-                                              cv::Size image_size );
-
+double normalizedMaxDistanceBetweenHorizonLines(  cv::Point3f horizon_line,
+                                                  cv::Point3f gt_horizon_line,
+                                                  cv::Size image_size,
+                                                  cv::Point2f *max_point1 = 0,
+                                                  cv::Point2f *max_point2 = 0);
 
 
 // basead on http://graphics.cs.msu.ru/files/text/IJCV2011tretyak.pdf

@@ -17,7 +17,8 @@ cv::Mat drawOrthogonalVP(cv::Mat image, std::vector<cv::Point2f> points,
   return image;
 }
 
-cv::Mat drawHorizonLine(cv::Mat original_image, cv::Point3f line) {
+cv::Mat drawHorizonLine(cv::Mat original_image, cv::Point3f line,
+                        cv::Scalar color) {
 
   cv::Mat image;
   original_image.copyTo(image);
@@ -25,7 +26,6 @@ cv::Mat drawHorizonLine(cv::Mat original_image, cv::Point3f line) {
   initial_point.y = (line.x * initial_point.x + line.z) / -line.y;
   final_point.y = (line.x * final_point.x + line.z) / -line.y;
 
-  cv::Scalar color(255, 0, 255);
   cv::line(image, initial_point, final_point, color, image.rows * 0.004);
   return image;
 }
@@ -140,12 +140,6 @@ cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
   return intersection_point;
 }
 
-cv::Point3f computeHorizonLineByZenithPointAndLineSamples(
-                                      cv::Point3f zenith_line,
-                                      std::vector<cv::Point3f> line_samples){
-  return cv::Point3f();
-
-}
 
 cv::Point3f horizonLineEstimation(cv::Point2f zenith,
                                   cv::Point2f principal_point,
@@ -171,7 +165,7 @@ cv::Point3f horizonLineEstimation(cv::Point2f zenith,
   cv::Mat1f left_mat = cv::Mat1f::ones(total_lines_samples,1);
   cv::Mat1f right_mat = cv::Mat1f::zeros(total_lines_samples,1);
 
-  //fill matrix with sample values
+  // fill matrix with sample values
   int count = 0;
   for (int i = 0; i < lines_by_vp.size(); i++) {
     for (int j = 0; j < lines_by_vp[i]; j++)
@@ -188,6 +182,52 @@ cv::Point3f horizonLineEstimation(cv::Point2f zenith,
   return horizon_line;
 }
 
+double normalizedMaxDistanceBetweenHorizonLines(  cv::Point3f horizon_line,
+                                                  cv::Point3f gt_horizon_line,
+                                                  cv::Size image_size,
+                                                  cv::Point2f *max_point1,
+                                                  cv::Point2f *max_point2){
+  cv::Point2f point1, point2, point3, point4;
+
+  point1.x = 0;
+  point1.y = horizon_line.z;
+
+  point2.x = 0;
+  point2.y = gt_horizon_line.z;
+
+  point3.x = image_size.width;
+  point3.y = point3.x * horizon_line.x + horizon_line.z;
+
+  point4.x = image_size.width;
+  point4.y = point4.x * gt_horizon_line.x + gt_horizon_line.z;
+
+  double distance1 = (point1.x - point2.x)*(point1.x - point2.x);
+  distance1 += (point1.y - point2.y)*(point1.y - point2.y);
+  distance1 = sqrt(distance1);
+
+  double distance2 = (point3.x - point4.x)*(point3.x - point4.x);
+  distance2 += (point3.y - point4.y)*(point3.y - point4.y);
+  distance2 = sqrt(distance2);
+
+  double max_distance;
+  cv::Point2f temp_point1, temp_point2;
+  if(distance1 > distance2){
+    max_distance = distance1;
+    temp_point1 = point1;
+    temp_point2 = point2;
+  }else{
+    max_distance = distance2;
+    temp_point1 = point3;
+    temp_point2 = point4;
+  }
+
+  if(max_point1 && max_point2){
+    (*max_point1) = temp_point1;
+    (*max_point2) = temp_point2;
+  }
+
+  return max_distance/((double) image_size.height);
+}
 
 
 
