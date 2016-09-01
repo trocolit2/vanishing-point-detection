@@ -1,5 +1,5 @@
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "VanishingPointDetection_test"
+#define BOOST_TEST_MODULE "VanishingPointDetectionTools_test"
 
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
@@ -8,7 +8,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <VanishingPointDetection.hpp>
+// #include <VanishingPointDetection.hpp>
 #include <VanishingPointDetectionTools.hpp>
 
 #define YUD_PATH "../../../resource/datasets/yorkurban/"
@@ -32,13 +32,13 @@ std::string numberToString(T number, unsigned int number_zeros) {
   return raw_number;
 }
 
-BOOST_AUTO_TEST_CASE(standardVanishingPoint_testeCase) {
-
-  VanishingPointDetection *detector = new VanishingPointDetection();
-  std::vector<cv::Point2f> out = detector->applyDetector(cv::Mat());
-
-  BOOST_CHECK_EQUAL(0, out.size());
-}
+// BOOST_AUTO_TEST_CASE(standardVanishingPoint_testeCase) {
+//
+//   VanishingPointDetection *detector = new VanishingPointDetection();
+//   std::vector<cv::Point2f> out = detector->applyVPDetector(cv::Mat());
+//
+//   BOOST_CHECK_EQUAL(0, out.size());
+// }
 
 BOOST_AUTO_TEST_CASE(checkEuclidianLineBy2Points_testcase) {
 
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(checkEurasianDataset_testCase) {
   cv::Mat raw_horizon_lines_gt, raw_zenith_gt;
   cv::FileStorage fs(gt_path, cv::FileStorage::READ);
   fs["horizon_lines"] >> raw_horizon_lines_gt;
-  fs["zenith"] >> raw_zenith_gt;
+  fs["zeniths"] >> raw_zenith_gt;
   //  std::cout << " out vpd " << raw_horizon_lines_gt << std::endl;
 
   cv::Mat1f horizon_lines_gt(raw_horizon_lines_gt);
