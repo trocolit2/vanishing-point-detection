@@ -106,7 +106,7 @@ horizon_lines: !!opencv-matrix
          -0.009251903715350644,1,-275.2808798403921,
          -0.01765167256886694,1,-340.1145325190946]
 
-zenith: !!opencv-matrix
+zeniths: !!opencv-matrix
    rows: 102
    cols: 2
    dt: d
