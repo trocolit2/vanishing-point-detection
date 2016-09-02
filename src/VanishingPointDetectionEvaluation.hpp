@@ -6,7 +6,6 @@ namespace vanishing_point {
 
 class VanishingPointDetectionEvaluation{
 
-
   public:
     VanishingPointDetectionEvaluation( std::string dataset_name,
                                        std::string dataset_path);
@@ -15,7 +14,10 @@ class VanishingPointDetectionEvaluation{
 
     std::string getDatasetName();
     std::string getDatasetPath();
-    std::vector<cv::Point2f> getErrorPerImages();
+
+    const std::vector<cv::Point2f> getGTZeniths();
+    const std::vector<cv::Point3f> getGTHorizonLines();
+    const std::vector<cv::Point2f> getErrorPerImages();
 
     cv::Mat drawVPDetection(cv::Mat image, std::vector<cv::Point2f> points);
 
@@ -27,11 +29,9 @@ class VanishingPointDetectionEvaluation{
     std::vector<cv::Point2f> _gt_zeniths;
     std::vector<cv::Point3f> _gt_horizon_lines;
 
-    void loadGroundTruth( std::vector<cv::Point2f> &gt_zeniths,
-                            std::vector<cv::Point3f> &gt_horizon_lines);
+    void loadGroundTruth( std::vector<cv::Point2f> *gt_zeniths,
+                          std::vector<cv::Point3f> *gt_horizon_lines);
 
-    std::vector<cv::Point2f> calcVectorCumulativeError(
-                                            std::vector<double> vector_errors);
 
 };
 
