@@ -10,14 +10,14 @@ class VanishingPointDetectionEvaluation{
     VanishingPointDetectionEvaluation( std::string dataset_name,
                                        std::string dataset_path);
 
-    void runEvaluation(VanishingPointDetection detector, bool show_detection);
+    std::vector<double> runEvaluation(VanishingPointDetection detector,
+                                      bool show_detection);
 
     std::string getDatasetName();
     std::string getDatasetPath();
 
     const std::vector<cv::Point2f> getGTZeniths();
     const std::vector<cv::Point3f> getGTHorizonLines();
-    const std::vector<cv::Point2f> getErrorPerImages();
 
     cv::Mat drawVPDetection(cv::Mat image, std::vector<cv::Point2f> points);
 

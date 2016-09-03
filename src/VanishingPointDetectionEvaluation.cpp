@@ -1,5 +1,6 @@
 #include <VanishingPointDetectionEvaluation.hpp>
 #include <iostream>
+
 namespace vanishing_point {
 
 #define VPDE                  VanishingPointDetectionEvaluation::
@@ -38,18 +39,42 @@ void VPDE loadGroundTruth( std::vector<cv::Point2f> *gt_zeniths,
   }
 }
 
+std::vector<double> VPDE runEvaluation( VanishingPointDetection detector,
+                                        bool show_detection){
+
+  std::vector<double> error_vector(_gt_zeniths.size());
+  for(uint i=0; i<error_vector.size(); ++i){
+
+    // load image
+    cv::Mat3b image = cv::imread("path");
+
+    // detection output;
+    std::vector<cv::Point2f> detected_vps;
+    std::vector<int> line_by_vp;
+    std::vector<cv::Vec4f> lines_segments;
+
+    detected_vps = detector.applyVPDetector( image, &line_by_vp,
+                                                    &lines_segments );
+    cv::Point2f zenith = detected_vps[1];
+    std::vector<cv::Point2f> horizon_points; = detected_vps[1];
+    horizon_points.push_back(detected_vps[0]);
+    for (uint j = 2; j < detected_vps.size(); j++) {
+      horizon_points.push_back(detected_vps[i]);
+    }
+
+  }
+
+}
+
+
+
+
 const std::vector<cv::Point2f> VPDE getGTZeniths(){
   return _gt_zeniths;
-};
+}
 
 const std::vector<cv::Point3f> VPDE getGTHorizonLines(){
   return _gt_horizon_lines;
-};
-
-const std::vector<cv::Point2f> VPDE getErrorPerImages(){
-  return std::vector<cv::Point2f>();
-};
-
-
+}
 
 }
