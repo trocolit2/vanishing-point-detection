@@ -29,8 +29,9 @@ class VanishingPointDetectionEvaluation{
     std::vector<cv::Point2f> _gt_zeniths;
     std::vector<cv::Point3f> _gt_horizon_lines;
 
-    void loadGroundTruth( std::vector<cv::Point2f> *gt_zeniths,
-                          std::vector<cv::Point3f> *gt_horizon_lines);
+    void loadGroundTruth(  std::string dataset_path,
+                           std::vector<cv::Point2f> *gt_zeniths,
+                           std::vector<cv::Point3f> *gt_horizon_lines);
 
 
 };

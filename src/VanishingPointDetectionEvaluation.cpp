@@ -17,13 +17,14 @@ VPDE VanishingPointDetectionEvaluation( std::string dataset_name,
                                         std::string dataset_path){
   _dataset_name = dataset_name;
   _dataset_path = dataset_path;
-  loadGroundTruth(&_gt_zeniths, &_gt_horizon_lines);
+  loadGroundTruth( dataset_path, &_gt_zeniths, &_gt_horizon_lines);
 }
 
-void VPDE loadGroundTruth( std::vector<cv::Point2f> *gt_zeniths,
+void VPDE loadGroundTruth( std::string dataset_path,
+                           std::vector<cv::Point2f> *gt_zeniths,
                            std::vector<cv::Point3f> *gt_horizon_lines){
 
-  std::string gt_path = _dataset_path + std::string(YML_GT_FILE);
+  std::string gt_path = dataset_path + std::string(YML_GT_FILE);
 
   cv::Mat raw_horizon_lines_gt, raw_zenith_gt;
   cv::FileStorage fs(gt_path, cv::FileStorage::READ);
