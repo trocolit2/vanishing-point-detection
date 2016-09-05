@@ -8,10 +8,11 @@ class VanishingPointDetectionEvaluation{
 
   public:
     VanishingPointDetectionEvaluation( std::string dataset_name,
-                                       std::string dataset_path);
+                                       std::string dataset_path,
+                                       std::string image_prefix = "",
+                                       std::string image_sufix = ".jpg");
 
-    std::vector<double> runEvaluation(VanishingPointDetection detector,
-                                      bool show_detection);
+    std::vector<double> runEvaluation(VanishingPointDetection *detector);
 
     std::string getDatasetName();
     std::string getDatasetPath();
@@ -19,12 +20,13 @@ class VanishingPointDetectionEvaluation{
     const std::vector<cv::Point2f> getGTZeniths();
     const std::vector<cv::Point3f> getGTHorizonLines();
 
-    cv::Mat drawVPDetection(cv::Mat image, std::vector<cv::Point2f> points);
-
   private:
     std::string _dataset_name;
     std::string _dataset_path;
-    std::vector<double> _vector_error_images;
+    std::string _image_prefix;
+    std::string _image_sufix;
+
+    // std::vector<double> _vector_error_images;
 
     std::vector<cv::Point2f> _gt_zeniths;
     std::vector<cv::Point3f> _gt_horizon_lines;
@@ -32,6 +34,8 @@ class VanishingPointDetectionEvaluation{
     void loadGroundTruth(  std::string dataset_path,
                            std::vector<cv::Point2f> *gt_zeniths,
                            std::vector<cv::Point3f> *gt_horizon_lines);
+
+
 
 
 };

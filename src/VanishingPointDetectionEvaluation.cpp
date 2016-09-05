@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <iostream>
+#include <string> //
 
 namespace vanishing_point {
 
@@ -14,11 +15,17 @@ namespace vanishing_point {
 
 
 VPDE VanishingPointDetectionEvaluation( std::string dataset_name,
-                                        std::string dataset_path){
+                                        std::string dataset_path,
+                                        std::string image_prefix,
+                                        std::string image_sufix   ){
   _dataset_name = dataset_name;
   _dataset_path = dataset_path;
+  _image_prefix = image_prefix;
+  _image_sufix = image_sufix;
   loadGroundTruth( dataset_path, &_gt_zeniths, &_gt_horizon_lines);
 }
+
+
 
 void VPDE loadGroundTruth( std::string dataset_path,
                            std::vector<cv::Point2f> *gt_zeniths,
@@ -44,21 +51,26 @@ void VPDE loadGroundTruth( std::string dataset_path,
   }
 }
 
-std::vector<double> VPDE runEvaluation( VanishingPointDetection detector,
-                                        bool show_detection){
+
+std::vector<double> VPDE runEvaluation( VanishingPointDetection *detector){
+
+  std::string str_size = std::to_string(_gt_zeniths.size()-1);
+  std::string seq_path = _dataset_path+_image_prefix+str_size+_image_sufix;
+  cv::VideoCapture capture(seq_path);
 
   std::vector<double> error_vector(_gt_zeniths.size());
   for(uint i=0; i < error_vector.size(); ++i){
 
     // load image
-    cv::Mat3b image = cv::imread("path");
+    cv::Mat3b image;
+    capture >> image;
 
     // detection output;
     std::vector<cv::Point2f> detected_vps;
     std::vector<int> lines_by_vp;
     std::vector<cv::Vec4f> lines_segments;
 
-    detected_vps = detector.applyVPDetector( image, &lines_by_vp,
+    detected_vps = detector->applyVPDetector( image, &lines_by_vp,
                                                     &lines_segments );
     // get zenith point
     cv::Point2f zenith = detected_vps[1];

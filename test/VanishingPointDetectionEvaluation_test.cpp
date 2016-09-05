@@ -17,6 +17,60 @@
 using namespace vanishing_point;
 
 
+class MOCK_VPD : public VanishingPointDetection{
+
+public:
+  MOCK_VPD(){};
+  std::vector<cv::Point2f> applyVPDetector(
+                                cv::Mat image,
+                                std::vector<int> *line_id_by_vp = 0,
+                                std::vector<cv::Vec4f> *lines_segments = 0 ){
+
+    float width = image.cols;
+    float height = image.rows;
+
+    // mock detected vanishing point
+    std::vector<cv::Point2f> out_points = {
+      cv::Point2f(width*0.2, height*0.9), cv::Point2f(width*0.45, height*1.1),
+      cv::Point2f(width*0.4, height*0.8), cv::Point2f(width*0.6, height*0.6),
+      cv::Point2f(width*1.2, height*0.2) };
+
+    // mock line segments
+    (*lines_segments) = {
+        cv::Vec4f(out_points[0].x, out_points[0].y, 100,100),
+        cv::Vec4f(out_points[0].x, out_points[0].y, 30,40),
+        cv::Vec4f(out_points[0].x, out_points[0].y, 120,200),
+        cv::Vec4f(out_points[0].x, out_points[0].y, 120,200),
+        cv::Vec4f(out_points[1].x, out_points[1].y, 250,250),
+        cv::Vec4f(out_points[1].x, out_points[1].y, 400,300),
+        cv::Vec4f(out_points[1].x, out_points[1].y, 200,500),
+        cv::Vec4f(out_points[2].x, out_points[2].y, 350,450),
+        cv::Vec4f(out_points[2].x, out_points[2].y, 500,300),
+        cv::Vec4f(out_points[3].x, out_points[3].y, 400,400),
+        cv::Vec4f(out_points[3].x, out_points[3].y, 10,10),
+        cv::Vec4f(out_points[3].x, out_points[3].y, 500,500),
+        cv::Vec4f(out_points[4].x, out_points[4].y, 600,100),
+        cv::Vec4f(out_points[4].x, out_points[4].y, 300,700)};
+
+    // cluster lines by vp
+    (*line_id_by_vp) = {0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4};
+
+    return out_points;
+  };
+
+};
+
+
+BOOST_AUTO_TEST_CASE(runEvaluation_testCase){
+
+  VanishingPointDetection *mock_detector = new MOCK_VPD();
+  VanishingPointDetectionEvaluation yud_evaluation("YUD", YUD_PATH);
+  // yud_evaluation.runEvaluation(mock_detector);
+
+  free(mock_detector);
+}
+
+
 BOOST_AUTO_TEST_CASE(loadGroundTruth_testCase){
 
 
