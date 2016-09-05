@@ -27,6 +27,9 @@ cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
 cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
                                                     cv::Point3f line_final);
 
+cv::Mat drawVPDetection(cv::Mat image, std::vector<cv::Point2f> points);
+
+
 
 
 
