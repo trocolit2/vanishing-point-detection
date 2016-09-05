@@ -6,7 +6,6 @@ namespace vanishing_point{
 class VanishingPointDetection{
 
 public:
-  VanishingPointDetection(){};
 
   std::vector<cv::Point2f> applyVPDetector(
                                 cv::Mat image,
