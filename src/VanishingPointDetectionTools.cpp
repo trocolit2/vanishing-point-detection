@@ -211,6 +211,7 @@ double normalizedMaxDistanceBetweenHorizonLines(  cv::Point3f horizon_line,
 
   double max_distance;
   cv::Point2f temp_point1, temp_point2;
+
   if(distance1 > distance2){
     max_distance = distance1;
     temp_point1 = point1;
@@ -226,7 +227,7 @@ double normalizedMaxDistanceBetweenHorizonLines(  cv::Point3f horizon_line,
     (*max_point2) = temp_point2;
   }
 
-  return max_distance/((double) image_size.height);
+  return max_distance/( (double) image_size.height);
 }
 
 
