@@ -1,6 +1,7 @@
 #include <VanishingPointDetectionEvaluation.hpp>
 #include <VanishingPointDetectionTools.hpp>
 
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include <iostream>
@@ -17,7 +18,7 @@ namespace vanishing_point {
 VPDE VanishingPointDetectionEvaluation( std::string dataset_name,
                                         std::string dataset_path,
                                         std::string image_prefix,
-                                        std::string image_sufix   ){
+                                        std::string image_sufix ){
   _dataset_name = dataset_name;
   _dataset_path = dataset_path;
   _image_prefix = image_prefix;
@@ -54,7 +55,10 @@ void VPDE loadGroundTruth( std::string dataset_path,
 
 std::vector<double> VPDE runEvaluation( VanishingPointDetection *detector){
 
-  std::string str_size = std::to_string(_gt_zeniths.size()-1);
+  // set path with sequence of images
+  std::string str_size = std::to_string(_gt_zeniths.size());
+  str_size = std::to_string( str_size.size());
+  str_size = "%0"+str_size+"d";
   std::string seq_path = _dataset_path+_image_prefix+str_size+_image_sufix;
   cv::VideoCapture capture(seq_path);
 
@@ -79,13 +83,15 @@ std::vector<double> VPDE runEvaluation( VanishingPointDetection *detector){
     std::vector<cv::Point2f> horizon_points;
     horizon_points.push_back(detected_vps[0]);
     for (uint j = 2; j < detected_vps.size(); j++)
-      horizon_points.push_back(detected_vps[i]);
+      horizon_points.push_back(detected_vps[j]);
 
     // count lines per horizontal vanishing_point
-    std::vector<int> numbers_lines_per_vp(detected_vps.size()-1);
+    std::vector<int> numbers_lines_per_vp(horizon_points.size());
     for(uint k = 0; k < lines_by_vp.size(); k++)
-      if( lines_by_vp[k] != 1)
-        numbers_lines_per_vp[k]++;
+      if( lines_by_vp[k] == 0)
+        numbers_lines_per_vp[ lines_by_vp[k] ]++;
+      else if(lines_by_vp[k] != 1)
+        numbers_lines_per_vp[ lines_by_vp[k]-1 ]++;
 
     // estimating horizon line
     cv::Point2f principal_point(image.cols/2, image.rows/2);
@@ -94,10 +100,31 @@ std::vector<double> VPDE runEvaluation( VanishingPointDetection *detector){
                                                       numbers_lines_per_vp);
 
     // estimating error
+    cv::Point2f max_point1, max_point2;
     error_vector[i] = normalizedMaxDistanceBetweenHorizonLines(
                                                         horizon_line,
                                                         _gt_horizon_lines[i],
-                                                        image.size());
+                                                        image.size(),
+                                                        &max_point1,
+                                                        &max_point2);
+
+    // Visual Debug
+    // cv::Point2f zenith_local, intersection_point;
+    // adjustPointsToDraw( zenith, principal_point, horizon_line,
+    //                     &intersection_point, &zenith_local);
+    //
+    // image = drawHorizonLine(image, horizon_line);
+    // image = drawHorizonLine(image, _gt_horizon_lines[i], cv::Scalar(255,255,0));
+    // image = drawZenithLine( image, zenith_local, principal_point,
+    //                         intersection_point);
+    // cv::Scalar color (255, 0, 0);
+    // for (int l = 0; l < horizon_points.size(); l++) {
+    //   cv::circle(image, horizon_points[l], image.rows * 0.01, color, -1);
+    // }
+    //   cv::line(image, max_point1, max_point2, color, image.rows * 0.005 );
+    //
+    // cv::imshow("out horizon",image);
+    // cv::waitKey();
 
   }
   return error_vector;
