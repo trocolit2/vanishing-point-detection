@@ -13,6 +13,9 @@ add_library(vanishing_point_detection   VanishingPointDetectionTools.cpp
 
 set(SOURCE_LIBS_LOCAL vanishing_point_detection ${OpenCV_LIBS})
 
+include_directories(line_detectors)
+add_subdirectory(line_detectors)
+
 include_directories(vp_detectors)
 add_subdirectory(vp_detectors)
 
