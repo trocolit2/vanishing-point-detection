@@ -8,7 +8,6 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 
-// #include <VanishingPointDetection.hpp>
 #include <VanishingPointDetectionEvaluation.hpp>
 
 #define YUD_PATH "../../../resource/datasets/yorkurban/"
