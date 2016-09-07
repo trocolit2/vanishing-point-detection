@@ -14,7 +14,6 @@ namespace vanishing_point {
 #define GT_ZENITH_DATA_NAME   "zeniths"
 #define GT_HORIZON_DATA_NAME  "horizon_lines"
 
-
 VPDE VanishingPointDetectionEvaluation( std::string dataset_name,
                                         std::string dataset_path,
                                         std::string image_prefix,

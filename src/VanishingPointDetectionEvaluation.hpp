@@ -1,6 +1,6 @@
 #include <opencv2/core/core.hpp>
 #include <vector>
-#include <VanishingPointDetection.hpp>
+#include <vp_detectors/VanishingPointDetection.hpp>
 
 namespace vanishing_point {
 
