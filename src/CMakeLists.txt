@@ -7,11 +7,13 @@ find_package(OpenCV REQUIRED)
 # include_directories()
 # add_subdirectory()
 
-add_library(vanishing_point_detection VanishingPointDetection.hpp
-                                  VanishingPointDetectionTools.cpp
-                                  VanishingPointDetectionEvaluation.cpp)
+add_library(vanishing_point_detection   VanishingPointDetectionTools.cpp
+                                        VanishingPointDetectionEvaluation.cpp)
 
-set_target_properties(vanishing_point_detection PROPERTIES LINKER_LANGUAGE CXX)
 
 set(SOURCE_LIBS_LOCAL vanishing_point_detection ${OpenCV_LIBS})
+
+include_directories(vp_detectors)
+add_subdirectory(vp_detectors)
+
 set(SOURCE_LIBS ${SOURCE_LIBS_LOCAL} ${SOURCE_LIBS} PARENT_SCOPE)

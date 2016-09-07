@@ -5,11 +5,16 @@ namespace vanishing_point{
 
 class VanishingPointDetection{
 
-public:
-
-  virtual std::vector<cv::Point2f> applyVPDetector(
+  public:
+    virtual std::vector<cv::Point2f> applyVPDetector(
                               cv::Mat image,
                               std::vector<int> *line_id_by_vp = 0,
                               std::vector<cv::Vec4f> *lines_segments = 0 ) = 0;
+
+protected:
+  std::vector<std::string> time_sessions;
+  std::vector<double> time_values;
+
+
 };
 }
