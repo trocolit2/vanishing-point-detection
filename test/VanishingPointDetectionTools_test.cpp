@@ -339,3 +339,30 @@ BOOST_AUTO_TEST_CASE(normalizedMaxDistanceBetweenHorizonLines_testCase){
     // cv::waitKey();
   }
 }
+
+BOOST_AUTO_TEST_CASE(MACRO_TIME_COUNT_testCase){
+
+  std::vector<double> time_session(2,0), cumulate_time(2,0),
+                      gt_time_session(2,0);
+
+  int times = 1000000;
+  for (size_t i = 0; i < times; i++) {
+    TIME_COUNT(time_session[0]){
+      clock_t start_time = std::clock();
+      gt_time_session[0] += double( std::clock() - start_time )/CLOCKS_PER_SEC;
+    }
+    cumulate_time[0] += time_session[0];
+
+    TIME_COUNT(time_session[1]){
+      clock_t start_time = std::clock();
+      gt_time_session[1] += double( std::clock() - start_time )/CLOCKS_PER_SEC;
+    }
+    cumulate_time[1] += time_session[1];
+  }
+
+  double epslon = 3.1e-7;
+  BOOST_CHECK_CLOSE(cumulate_time[0]/times - gt_time_session[0]/times,
+                    epslon , 5);
+  BOOST_CHECK_CLOSE(cumulate_time[1]/times - gt_time_session[1]/times,
+                    epslon , 5);
+}
