@@ -17,6 +17,26 @@
 
 using namespace vanishing_point;
 
+
+template <typename T> std::string numberToString(T number) {
+  std::ostringstream ss;
+  ss << number;
+  return ss.str();
+}
+
+
+template <typename T>
+std::string numberToString(T number, unsigned int number_zeros) {
+  std::string raw_number = numberToString(number);
+  unsigned int extra_zeros = number_zeros - raw_number.length();
+  for (unsigned int i = 0; i < extra_zeros; i++) {
+    raw_number = "0" + raw_number;
+  }
+  return raw_number;
+}
+
+
+
 BOOST_AUTO_TEST_CASE(applyLSDetector_testCase){
 
   std::vector<cv::Vec4f> gt_ls_yud = { cv::Vec4f(165, 4, 183, 10),
@@ -98,5 +118,34 @@ BOOST_AUTO_TEST_CASE(applyLSDetector_testCase){
   // cv::imshow("YUD IMAGE" ,yud_image);
   // cv::imshow("EUASIAN IMAGE" ,eurasian_image);
   // cv::waitKey();
+
+}
+
+BOOST_AUTO_TEST_CASE(lineSegmentTime_testCase){
+
+  std::vector<double> gt_times = {0.01,
+                                  0.16};
+
+  LineSegmentDetector *lsd = new aLSD();
+  std::vector<double> sessions_time(lsd->getTimeSessionValues().size(), 0);
+
+  int number_images = 100;
+  for (int i = 0; i < number_images; i++) {
+    std::string str_num = numberToString(number_images, 3);
+    cv::Mat yud_image = cv::imread(std::string(YUD_PATH)+str_num+".jpg");
+    std::vector<cv::Vec4f> ls_yud = lsd->applyLSDetector(yud_image);
+    for(uint j = 0; j < sessions_time.size(); j++)
+      sessions_time[j] += lsd->getTimeSessionValues()[j];
+  }
+
+  float closeness = 10.0;
+  BOOST_CHECK_CLOSE(sessions_time[2]/number_images, gt_times[0], closeness);
+  BOOST_CHECK_CLOSE(sessions_time[3]/number_images, gt_times[1], closeness);
+
+  // Terminal print DEBUG
+  // for(uint j = 0; j < sessions_time.size(); j++){
+  //   std::cout << "Session " << lsd->getTimeSessionNames()[j]
+  //             << " " << sessions_time[j]/number_images << std::endl;
+  // }
 
 }
