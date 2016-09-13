@@ -11,7 +11,6 @@ class aLSD : public LineSegmentDetector {
 
   public:
     aLSD();
-
     std::vector<cv::Vec4f> applyLSDetector(cv::Mat image);
 
 };
