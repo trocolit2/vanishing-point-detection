@@ -8,11 +8,12 @@ find_package(OpenCV REQUIRED)
 # add_subdirectory()
 
 
-add_library(vp_detectors  VanishingPointDetection.hpp
-                          RCSCfMIoMW.cpp)
+add_library(vp_detectors  VanishingPointDetection.hpp)
 
 set_target_properties(vp_detectors PROPERTIES LINKER_LANGUAGE CXX)
 
+include_directories(RCSCfMIoMW)
+add_subdirectory(RCSCfMIoMW)
 
 set(SOURCE_LIBS_LOCAL vp_detectors ${OpenCV_LIBS})
 set(SOURCE_LIBS ${SOURCE_LIBS_LOCAL} ${SOURCE_LIBS} PARENT_SCOPE)
