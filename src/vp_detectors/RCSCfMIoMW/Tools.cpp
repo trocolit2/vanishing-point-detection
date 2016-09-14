@@ -1,5 +1,7 @@
 #include <Tools.hpp>
 
+#include <iostream>
+
 namespace vanishing_point {
 
 cv::Point2f lineSegmentCenterPoint(cv::Vec4f line_segment){
@@ -9,7 +11,9 @@ cv::Point2f lineSegmentCenterPoint(cv::Vec4f line_segment){
 };
 
 double distancePoint2Line(cv::Point3f line, cv::Point2f point){
-  return 0;
+  double distance = line.x*point.x+ line.y*point.y + line.z;
+  distance = abs(distance)/(sqrt(line.x*line.x + line.y*line.y));
+  return distance;
 }
 
 double errorLineSegmentPoint2VP(  cv::Vec4f line_segment,
