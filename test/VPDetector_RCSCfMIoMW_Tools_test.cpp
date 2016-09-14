@@ -14,6 +14,7 @@
 #include <vp_detectors/RCSCfMIoMW/Tools.hpp>
 
 using namespace vanishing_point;
+
 BOOST_AUTO_TEST_CASE(centerPoint_testCase){
 
   std::vector<cv::Vec4f> line_segments = {cv::Vec4f(0,0,10,10),
@@ -29,5 +30,22 @@ BOOST_AUTO_TEST_CASE(centerPoint_testCase){
     // std::cout << i << " Center "<< center << std::endl;
   }
 
+}
 
+BOOST_AUTO_TEST_CASE(distancePoint2Line_testCase){
+
+  std::vector<cv::Point3f> lines = {cv::Point3f(2.0, -3, -4.0),
+      cv::Point3f(6.0, -5.0, 10.0), cv::Point3f(3.0, 4.0, 0),
+      cv::Point3f(3.0, -4.0, -25.0)};
+
+  std::vector<cv::Point2f> points = {cv::Point2f(5,6), cv::Point2f(-3,7),
+    cv::Point2f(2,-1), cv::Point2f(0,0)};
+  std::vector<double> gt_distance = {3.328, 5.506, 0.400, 5.0};
+
+  for (uint i = 0; i < lines.size(); i++) {
+    double distance = distancePoint2Line(lines[i],points[i]);
+    BOOST_CHECK_CLOSE(distance, gt_distance[i], 0.01);
+
+    std::cout << i << " distance "<< distance << std::endl;
+  }
 }
