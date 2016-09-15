@@ -52,4 +52,24 @@ BOOST_AUTO_TEST_CASE(distancePoint2Line_testCase){
 
 BOOST_AUTO_TEST_CASE(errorLineSegmentPoint2VP_testCase){
 
+  std::vector<double> gt_error = {10, 5, 6, 100, 3, 9};
+
+  cv::Point2f center(250, 250);
+  std::vector<cv::Vec4f> line_segments = {
+    cv::Vec4f(center.x+10,center.y, center.x-10,center.y),
+    cv::Vec4f(center.x+5,center.y+5, center.x-5,center.y-5),
+    cv::Vec4f(center.x+6,center.y+100, center.x-6,center.y-100),
+    cv::Vec4f(center.x,center.y+100, center.x,center.y-100),
+    cv::Vec4f(center.x+6,center.y+3, center.x-6,center.y-3),
+    cv::Vec4f(center.x+20,center.y+9, center.x-20,center.y-9)};
+
+  std::vector<cv::Point3f> homogeneos_vp = {
+    cv::Point3f(250*0.5, 2*0.5, 0.4999), cv::Point3f(250*0.5, 2*0.5, 0.49999),
+    cv::Point3f(250*0.5, 2*0.5, 0.499999), cv::Point3f(2*0.3, 250*0.3, 0.299),
+    cv::Point3f(2*0.3, 250*0.3, 0.299), cv::Point3f(2*0.3, 250*0.3, 0.299)};
+  for (uint i = 0; i < line_segments.size(); i++) {
+    double error = errorLineSegmentPoint2VP(line_segments[i], homogeneos_vp[i]);
+    BOOST_CHECK_CLOSE(error, gt_error[i], 0.01);
+    // std::cout<<" I "<<i<< " error "<< error <<std::endl;
+  }
 }
