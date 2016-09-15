@@ -12,4 +12,8 @@ double errorLineSegmentPoint2VP(  cv::Vec4f line_segment,
                                   cv::Point2f *end_point = 0,
                                   cv::Point3f *line_center_vp = 0);
 
+cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
+                                         cv::Point2f point_final);
+
+
 }
