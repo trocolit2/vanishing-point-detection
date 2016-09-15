@@ -6,7 +6,7 @@ extern "C" {
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 #include <ctime>
-#include <VanishingPointDetectionTools.hpp>
+#include <TimeCountTools.hpp>
 
 clock_t begin_time;
 

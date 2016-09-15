@@ -7,11 +7,9 @@ find_package(OpenCV REQUIRED)
 # include_directories()
 # add_subdirectory()
 
-add_library(vanishing_point_detection   VanishingPointDetectionTools.cpp
-                                        VanishingPointDetectionEvaluation.cpp)
-
-
-set(SOURCE_LIBS_LOCAL vanishing_point_detection ${OpenCV_LIBS})
+add_library(time_count_tools TimeCountTools.hpp)
+set_target_properties(time_count_tools PROPERTIES LINKER_LANGUAGE CXX)
+set(SOURCE_LIBS_LOCAL time_count_tools ${OpenCV_LIBS})
 
 include_directories(line_detectors)
 add_subdirectory(line_detectors)
