@@ -9,7 +9,8 @@
 #include <opencv2/highgui/highgui.hpp>
 
 // #include <VanishingPointDetection.hpp>
-#include <VanishingPointDetectionTools.hpp>
+#include <vp_detectors/VanishingPointDetectionTools.hpp>
+#include <TimeCountTools.hpp>
 
 #define YUD_PATH "../../../resource/datasets/yorkurban/"
 #define EURASIAN_PATH "../../../resource/datasets/eurasiancities/"

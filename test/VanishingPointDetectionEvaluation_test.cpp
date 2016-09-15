@@ -8,7 +8,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <VanishingPointDetectionEvaluation.hpp>
+#include <vp_detectors/VanishingPointDetectionEvaluation.hpp>
 
 #define YUD_PATH "../../../resource/datasets/yorkurban/"
 #define EURASIAN_PATH "../../../resource/datasets/eurasiancities/"
