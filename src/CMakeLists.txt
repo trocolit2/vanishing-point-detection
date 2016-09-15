@@ -19,4 +19,5 @@ add_subdirectory(line_detectors)
 include_directories(vp_detectors)
 add_subdirectory(vp_detectors)
 
+
 set(SOURCE_LIBS ${SOURCE_LIBS_LOCAL} ${SOURCE_LIBS} PARENT_SCOPE)

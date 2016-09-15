@@ -7,10 +7,8 @@ find_package(OpenCV REQUIRED)
 # include_directories()
 # add_subdirectory()
 
-  add_library(line_segments_detector  LineSegmentDetector.hpp
+add_library(line_segments_detector  LineSegmentDetector.hpp
                                       aLSD.cpp)
-
-set_target_properties(line_segments_detector PROPERTIES LINKER_LANGUAGE CXX)
 
 set(SOURCE_LIBS_LOCAL line_segments_detector ${OpenCV_LIBS})
 
