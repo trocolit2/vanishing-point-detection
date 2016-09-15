@@ -45,7 +45,11 @@ BOOST_AUTO_TEST_CASE(distancePoint2Line_testCase){
   for (uint i = 0; i < lines.size(); i++) {
     double distance = distancePoint2Line(lines[i],points[i]);
     BOOST_CHECK_CLOSE(distance, gt_distance[i], 0.01);
-
-    std::cout << i << " distance "<< distance << std::endl;
+    // Debug
+    //std::cout << i << " distance "<< distance << std::endl;
   }
+}
+
+BOOST_AUTO_TEST_CASE(errorLineSegmentPoint2VP_testCase){
+
 }
