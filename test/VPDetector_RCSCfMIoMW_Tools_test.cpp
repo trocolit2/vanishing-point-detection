@@ -73,3 +73,42 @@ BOOST_AUTO_TEST_CASE(errorLineSegmentPoint2VP_testCase){
     // std::cout<<" I "<<i<< " error "<< error <<std::endl;
   }
 }
+
+
+BOOST_AUTO_TEST_CASE(estimationVPby4LinesCase1_testCase){
+
+  cv::Mat3b image = cv::Mat3b::zeros(500,500);
+  cv::Point2f center_point(image.cols/2, image.rows/2);
+  std::vector<cv::Vec4f> line_segments = {
+              cv::Vec4f(0.6, 0.1, 0.7, 0.1), cv::Vec4f(0.55, 0.2, 0.55, 0.3),
+              cv::Vec4f(0.7, 0.4, 0.8, 0.5), cv::Vec4f(0.8, 0.7, 0.7, 0.8)};
+
+  for (uint i = 0; i < line_segments.size(); i++) {
+    cv::Mat temp_mat = cv::Mat(line_segments).row(i);
+    for (uint j = 0; j < 2; j++) {
+      cv::Mat1f local_mat(temp_mat);
+      local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
+      local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
+    }
+  }
+
+  std::cout << "MAT VEC4F "<< cv::Mat(line_segments) << std::endl;
+
+  std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(line_segments);
+
+  // std::cout << "VPS "<< cv::Mat(vps) << std::endl;
+
+  for (uint i = 0; i < line_segments.size(); i++) {
+    cv::Point2f point1(line_segments[i][0],line_segments[i][1]);
+    cv::Point2f point2(line_segments[i][2],line_segments[i][3]);
+    cv::line( image, point1 + center_point, point2 + center_point,
+              cv::Scalar(0, 255, 255), image.rows * 0.004);
+  }
+
+  cv::imshow("out", image);
+  cv::waitKey();
+
+  // cv::Mat1f(line_segments).col(0) =(cv::Mat1f(line_segments).col(0)*image.cols);
+  // cv::Mat1f(line_segments).col(2) = cv::Mat1f(line_segments).col(2)*image.cols;
+
+}
