@@ -121,26 +121,27 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesCase1_testCase){
     for (uint i = 0; i < line_segments.size(); i++) {
       cv::Point2f initial_point(line_segments[i][0], line_segments[i][1]);
       cv::Point2f end_point(line_segments[i][2], line_segments[i][3]);
-        lines[i] = defineEuclidianLineBy2Points(initial_point, end_point);
+      lines[i] = defineEuclidianLineBy2Points(initial_point, end_point);
     }
 
     std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(lines);
-
-    for (uint i = 0; i < line_segments.size(); i++) {
-      cv::Point2f point1(line_segments[i][0],line_segments[i][1]);
-      cv::Point2f point2(line_segments[i][2],line_segments[i][3]);
-      cv::line( image, point1 + center_point, point2 + center_point,
-                cv::Scalar(0, 255, 255), image.rows * 0.002);
-    }
 
     cv::Point2f vp3 = checkVPTriangle(vps[0], vps[1], cv::Point2f(0,0));
 
     BOOST_CHECK_CLOSE(vp3.x, vps[2].x, 0.001);
     BOOST_CHECK_CLOSE(vp3.y, vps[2].y, 0.001);
 
+
     // visual debug
     // std::cout << "VPS FINAL " <<  cv::Mat(vps) << std::endl;
     // std::cout << "VP Check " << vp3 << std::endl;
+
+    // for (uint i = 0; i < line_segments.size(); i++) {
+    //   cv::Point2f point1(line_segments[i][0],line_segments[i][1]);
+    //   cv::Point2f point2(line_segments[i][2],line_segments[i][3]);
+    //   cv::line( image, point1 + center_point, point2 + center_point,
+    //             cv::Scalar(0, 255, 255), image.rows * 0.002);
+    // }
     //
     // cv::circle( image, center_point, image.rows * 0.005,
     //             cv::Scalar(255,255,255), -1);
@@ -153,4 +154,50 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesCase1_testCase){
     // cv::waitKey();
     // image = cv::Mat3b::zeros(500,500);
   }
+}
+
+BOOST_AUTO_TEST_CASE(estimationVPby4LinesCase2_testCase){
+
+  cv::Mat3b image = cv::Mat3b::zeros(500,500);
+  cv::Point2f center_point(image.cols/2, image.rows/2);
+
+  std::vector< std::vector<cv::Vec4f> > set4_segments(2);
+  set4_segments[0]= {
+              cv::Vec4f(0.6, 0.1, 0.7, 0.1), cv::Vec4f(0.55, 0.2, 0.55, 0.3),
+              cv::Vec4f(0.7, 0.4, 0.8, 0.5), cv::Vec4f(0.4, 0.6, 0.6, 0.7)};
+  set4_segments[1]= {
+              cv::Vec4f(0.3, 0.0, 0.4, 0.0), cv::Vec4f(0.3, 0.2, 0.4, 0.1),
+              cv::Vec4f(0.1, 0.7, 0.1, 0.8), cv::Vec4f(0.5, 1.0, 1.0, 0.9)};
+
+  for (uint k = 0; k < set4_segments.size(); k++) {
+    std::vector<cv::Vec4f> line_segments = set4_segments[k];
+
+    for (uint i = 0; i < line_segments.size(); i++) {
+      cv::Mat temp_mat = cv::Mat(line_segments).row(i);
+      for (uint j = 0; j < 2; j++) {
+        cv::Mat1f local_mat(temp_mat);
+        local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
+        local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
+      }
+    }
+
+    std::vector<cv::Point3f> lines(4);
+    for (uint i = 0; i < line_segments.size(); i++) {
+      cv::Point2f initial_point(line_segments[i][0], line_segments[i][1]);
+      cv::Point2f end_point(line_segments[i][2], line_segments[i][3]);
+      lines[i] = defineEuclidianLineBy2Points(initial_point, end_point);
+    }
+
+    std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(lines);
+    cv::Point2f vp3 = checkVPTriangle(vps[0], vps[1], cv::Point2f(0,0));
+
+    BOOST_CHECK_CLOSE(vp3.x, vps[2].x, 0.001);
+    BOOST_CHECK_CLOSE(vp3.y, vps[2].y, 0.001);
+
+    // DEBUG
+    // std::cout << "VPS FINAL " <<  cv::Mat(vps) << std::endl;
+    // std::cout << "VP Check " << vp3 << std::endl;
+
+  }
+
 }
