@@ -15,6 +15,44 @@
 
 using namespace vanishing_point;
 
+cv::Point2f lineIntersection(cv::Point3f line_initial,
+                                                    cv::Point3f line_final) {
+
+  cv::Mat1f mat_lines = cv::Mat1f::ones(2, 3);
+  mat_lines.row(0) = cv::Mat1f(line_initial).t();
+  mat_lines.row(1) = cv::Mat1f(line_final).t();
+  // std::cout << "Mat with lines" << mat_lines << std::endl;
+
+  cv::Mat1f temp_point;
+  cv::SVD::solveZ(mat_lines, temp_point);
+  // std::cout << "Point raw" << temp_point.t() << std::endl;
+
+  cv::Point2f intersection_point(nanf("There is no intersection"),
+                                 nanf("There is no intersection"));
+  float epslon = 1e-8;
+  if (fabs(temp_point[2][0]) > epslon) {
+    intersection_point.x = temp_point[0][0] / temp_point[2][0];
+    intersection_point.y = temp_point[1][0] / temp_point[2][0];
+  }
+
+  return intersection_point;
+}
+
+cv::Point2f checkVPTriangle(cv::Point2f vp1,
+                            cv::Point2f vp2,
+                            cv::Point2f center){
+  double alpha1 = -1/((vp1.y - center.y)/(vp1.x - center.x));
+  double alpha2 = -1/((vp2.y - center.y)/(vp2.x - center.x));
+
+  double const1 = vp2.y - vp2.x*alpha1;
+  double const2 = vp1.y - vp1.x*alpha2;
+
+  cv::Point3f line1(alpha1, -1, const1);
+  cv::Point3f line2(alpha2, -1, const2);
+
+  return lineIntersection(line1, line2);
+}
+
 BOOST_AUTO_TEST_CASE(centerPoint_testCase){
 
   std::vector<cv::Vec4f> line_segments = {cv::Vec4f(0,0,10,10),
@@ -79,36 +117,55 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesCase1_testCase){
 
   cv::Mat3b image = cv::Mat3b::zeros(500,500);
   cv::Point2f center_point(image.cols/2, image.rows/2);
-  std::vector<cv::Vec4f> line_segments = {
+
+  std::vector< std::vector<cv::Vec4f> > set4_segments(2);
+  set4_segments[0]= {
               cv::Vec4f(0.6, 0.1, 0.7, 0.1), cv::Vec4f(0.55, 0.2, 0.55, 0.3),
               cv::Vec4f(0.7, 0.4, 0.8, 0.5), cv::Vec4f(0.8, 0.7, 0.7, 0.8)};
 
-  for (uint i = 0; i < line_segments.size(); i++) {
-    cv::Mat temp_mat = cv::Mat(line_segments).row(i);
-    for (uint j = 0; j < 2; j++) {
-      cv::Mat1f local_mat(temp_mat);
-      local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
-      local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
+  set4_segments[1]= {
+              cv::Vec4f(0.3, 0.0, 0.4, 0.0), cv::Vec4f(0.3, 0.2, 0.4, 0.1),
+              cv::Vec4f(0.1, 0.7, 0.1, 0.8), cv::Vec4f(0.2, 0.9, 0.3, 0.9)};
+
+  for (uint k = 0; k < set4_segments.size(); k++) {
+    std::vector<cv::Vec4f> line_segments = set4_segments[k];
+
+    for (uint i = 0; i < line_segments.size(); i++) {
+      cv::Mat temp_mat = cv::Mat(line_segments).row(i);
+      for (uint j = 0; j < 2; j++) {
+        cv::Mat1f local_mat(temp_mat);
+        local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
+        local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
+      }
     }
+
+    std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(line_segments);
+
+    for (uint i = 0; i < line_segments.size(); i++) {
+      cv::Point2f point1(line_segments[i][0],line_segments[i][1]);
+      cv::Point2f point2(line_segments[i][2],line_segments[i][3]);
+      cv::line( image, point1 + center_point, point2 + center_point,
+                cv::Scalar(0, 255, 255), image.rows * 0.002);
+    }
+
+    cv::Point2f vp3 = checkVPTriangle(vps[0], vps[1], cv::Point2f(0,0));
+
+    BOOST_CHECK_CLOSE(vp3.x, vps[2].x, 0.001);
+    BOOST_CHECK_CLOSE(vp3.y, vps[2].y, 0.001);
+
+    // visual debug
+    // std::cout << "VPS FINAL " <<  cv::Mat(vps) << std::endl;
+    // std::cout << "VP Check " << vp3 << std::endl;
+    //
+    // cv::circle( image, center_point, image.rows * 0.005,
+    //             cv::Scalar(255,255,255), -1);
+    // for (uint i = 0; i < vps.size(); i++) {
+    //   cv::circle( image, vps[i] +center_point, image.rows * 0.005,
+    //               cv::Scalar(0,255,0), -1);
+    // }
+    //
+    // cv::imshow("out", image);
+    // cv::waitKey();
+    // image = cv::Mat3b::zeros(500,500);
   }
-
-  std::cout << "MAT VEC4F "<< cv::Mat(line_segments) << std::endl;
-
-  std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(line_segments);
-
-  // std::cout << "VPS "<< cv::Mat(vps) << std::endl;
-
-  for (uint i = 0; i < line_segments.size(); i++) {
-    cv::Point2f point1(line_segments[i][0],line_segments[i][1]);
-    cv::Point2f point2(line_segments[i][2],line_segments[i][3]);
-    cv::line( image, point1 + center_point, point2 + center_point,
-              cv::Scalar(0, 255, 255), image.rows * 0.004);
-  }
-
-  cv::imshow("out", image);
-  cv::waitKey();
-
-  // cv::Mat1f(line_segments).col(0) =(cv::Mat1f(line_segments).col(0)*image.cols);
-  // cv::Mat1f(line_segments).col(2) = cv::Mat1f(line_segments).col(2)*image.cols;
-
 }
