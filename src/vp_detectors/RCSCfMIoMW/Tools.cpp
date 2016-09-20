@@ -87,7 +87,7 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
 
   std::vector<cv::Point2f> vps(3);
   for (uint j = 0; j < 2; j++)
-    vps[j] = definePointByEuclidianLinesIntersection( lines[j*2], lines[j*2-1]);
+    vps[j] = definePointByEuclidianLinesIntersection( lines[j*2], lines[j*2+1]);
 
   double local_focal = -(vps[0].x*vps[1].x + vps[0].y*vps[1].y);
   local_focal = sqrt(local_focal);
@@ -108,7 +108,7 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
 
   if(focal_length)
     (*focal_length) = local_focal;
-    
+
   return vps;
 }
 
