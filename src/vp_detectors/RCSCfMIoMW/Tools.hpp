@@ -12,18 +12,9 @@ double errorLineSegmentPoint2VP(  cv::Vec4f line_segment,
                                   cv::Point2f *end_point = 0,
                                   cv::Point3f *line_center_vp = 0);
 
-// duplicated code from VanishingPointDetectionTools
-cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
-                                         cv::Point2f point_final);
-
-// duplicated code from VanishingPointDetectionTools
-cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
-                                                   cv::Point3f line_final);
-
-
 // to apply this method, principal point is setted as (0,0)
 std::vector<cv::Point2f> estimationVPby4LinesCase1(
-                                          std::vector<cv::Vec4f> line_segments,
+                                          std::vector<cv::Point3f> lines,
                                           double *focal_length = 0);
 
 

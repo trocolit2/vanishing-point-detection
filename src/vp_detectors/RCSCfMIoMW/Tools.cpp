@@ -1,4 +1,6 @@
-#include <Tools.hpp>
+#include "Tools.hpp"
+#include <VanishingPointDetectionTools.hpp>
+
 #include <iostream>
 
 namespace vanishing_point {
@@ -34,56 +36,9 @@ double errorLineSegmentPoint2VP(  cv::Vec4f line_segment,
   return distancePoint2Line(line, local_end_point);
 }
 
-cv::Point3f defineEuclidianLineBy2Points(cv::Point2f point_inital,
-                                         cv::Point2f point_final) {
-
-  float delta_X = point_final.x - point_inital.x;
-  float slope,  intercept;
-  cv::Point3f line;
-
-  if( delta_X != 0 ){
-    slope = (point_final.y - point_inital.y) / delta_X;
-    intercept = point_inital.y - slope * point_inital.x;
-    line = cv::Point3f(slope, -1, intercept);
-  }else{
-    line = cv::Point3f(-1, 0, point_final.x);
-  }
-
-  return line;
-}
-
-cv::Point2f definePointByEuclidianLinesIntersection(cv::Point3f line_initial,
-                                                    cv::Point3f line_final) {
-
-  cv::Mat1f mat_lines = cv::Mat1f::ones(2, 3);
-  mat_lines.row(0) = cv::Mat1f(line_initial).t();
-  mat_lines.row(1) = cv::Mat1f(line_final).t();
-  // std::cout << "Mat with lines" << mat_lines << std::endl;
-
-  cv::Mat1f temp_point;
-  cv::SVD::solveZ(mat_lines, temp_point);
-  // std::cout << "Point raw" << temp_point.t() << std::endl;
-
-  cv::Point2f intersection_point(nanf("There is no intersection"),
-                                 nanf("There is no intersection"));
-  float epslon = 1e-8;
-  if (fabs(temp_point[2][0]) > epslon) {
-    intersection_point.x = temp_point[0][0] / temp_point[2][0];
-    intersection_point.y = temp_point[1][0] / temp_point[2][0];
-  }
-
-  return intersection_point;
-}
-
 std::vector<cv::Point2f> estimationVPby4LinesCase1(
-                                          std::vector<cv::Vec4f> line_segments,
+                                          std::vector<cv::Point3f> lines,
                                           double *focal_length){
-  std::vector<cv::Point3f> lines(4);
-  for (uint i = 0; i < line_segments.size(); i++) {
-    cv::Point2f initial_point(line_segments[i][0], line_segments[i][1]);
-    cv::Point2f end_point(line_segments[i][2], line_segments[i][3]);
-      lines[i] = defineEuclidianLineBy2Points(initial_point, end_point);
-  }
 
   std::vector<cv::Point2f> vps(3);
   for (uint j = 0; j < 2; j++)
@@ -112,6 +67,11 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
   return vps;
 }
 
+std::vector<cv::Point2f> estimationVPby4LinesCase2(
+                                          std::vector<cv::Vec4f> lines,
+                                          double *focal_length);
+  std::vector<cv::Point2f> vps(3);
+  vps[0] = definePointByEuclidianLinesIntersection()
 
 
 }

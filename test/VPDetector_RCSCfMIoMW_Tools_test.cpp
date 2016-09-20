@@ -12,31 +12,9 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <vp_detectors/RCSCfMIoMW/Tools.hpp>
+#include <vp_detectors/VanishingPointDetectionTools.hpp>
 
 using namespace vanishing_point;
-
-cv::Point2f lineIntersection(cv::Point3f line_initial,
-                                                    cv::Point3f line_final) {
-
-  cv::Mat1f mat_lines = cv::Mat1f::ones(2, 3);
-  mat_lines.row(0) = cv::Mat1f(line_initial).t();
-  mat_lines.row(1) = cv::Mat1f(line_final).t();
-  // std::cout << "Mat with lines" << mat_lines << std::endl;
-
-  cv::Mat1f temp_point;
-  cv::SVD::solveZ(mat_lines, temp_point);
-  // std::cout << "Point raw" << temp_point.t() << std::endl;
-
-  cv::Point2f intersection_point(nanf("There is no intersection"),
-                                 nanf("There is no intersection"));
-  float epslon = 1e-8;
-  if (fabs(temp_point[2][0]) > epslon) {
-    intersection_point.x = temp_point[0][0] / temp_point[2][0];
-    intersection_point.y = temp_point[1][0] / temp_point[2][0];
-  }
-
-  return intersection_point;
-}
 
 cv::Point2f checkVPTriangle(cv::Point2f vp1,
                             cv::Point2f vp2,
@@ -50,7 +28,7 @@ cv::Point2f checkVPTriangle(cv::Point2f vp1,
   cv::Point3f line1(alpha1, -1, const1);
   cv::Point3f line2(alpha2, -1, const2);
 
-  return lineIntersection(line1, line2);
+  return definePointByEuclidianLinesIntersection(line1, line2);
 }
 
 BOOST_AUTO_TEST_CASE(centerPoint_testCase){
@@ -139,7 +117,14 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesCase1_testCase){
       }
     }
 
-    std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(line_segments);
+    std::vector<cv::Point3f> lines(4);
+    for (uint i = 0; i < line_segments.size(); i++) {
+      cv::Point2f initial_point(line_segments[i][0], line_segments[i][1]);
+      cv::Point2f end_point(line_segments[i][2], line_segments[i][3]);
+        lines[i] = defineEuclidianLineBy2Points(initial_point, end_point);
+    }
+
+    std::vector<cv::Point2f> vps = estimationVPby4LinesCase1(lines);
 
     for (uint i = 0; i < line_segments.size(); i++) {
       cv::Point2f point1(line_segments[i][0],line_segments[i][1]);
