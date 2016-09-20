@@ -20,7 +20,7 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
 
 // to apply this method, principal point is setted as (0,0)
 std::vector<cv::Point2f> estimationVPby4LinesCase2(
-                                          std::vector<cv::Vec4f> line_segments,
+                                          std::vector<cv::Point3f> lines,
                                           double *focal_length = 0);
 
 }

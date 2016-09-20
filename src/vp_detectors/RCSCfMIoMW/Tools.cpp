@@ -68,10 +68,55 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
 }
 
 std::vector<cv::Point2f> estimationVPby4LinesCase2(
-                                          std::vector<cv::Vec4f> lines,
-                                          double *focal_length);
+                                          std::vector<cv::Point3f> lines,
+                                          double *focal_length){
   std::vector<cv::Point2f> vps(3);
-  vps[0] = definePointByEuclidianLinesIntersection()
+  vps[0] = definePointByEuclidianLinesIntersection(lines[0], lines[1]);
 
+  cv::Point3f consts(0,0,0);
+  consts.x =                        lines[2].x*lines[3].x
+             +                      lines[2].y*lines[3].y;
+
+  consts.y =   vps[0].y*  vps[0].y* lines[2].x*lines[3].x
+             - vps[0].x*  vps[0].y* lines[2].y*lines[3].x
+             - vps[0].x*            lines[2].z*lines[3].x
+             - vps[0].x*  vps[0].y* lines[2].x*lines[3].y
+             - vps[0].y*            lines[2].z*lines[3].y
+             - vps[0].x*            lines[2].x*lines[3].z
+             - vps[0].y*            lines[2].y*lines[3].z
+             - vps[0].x*  vps[0].x* lines[2].y*lines[3].y;
+
+  consts.z =   vps[0].x*            lines[2].z*lines[3].z
+             + vps[0].y*  vps[0].y* lines[2].z*lines[3].z;
+
+  double delta = (consts.y*consts.y)-4*consts.x*consts.z;
+
+  if(delta < 0){
+    if(focal_length)
+      (*focal_length) = -1;
+    return std::vector<cv::Point2f>(3);
+  }
+
+  delta = sqrt(delta);
+  double focal_length_2 = ((+consts.y)+delta)/2*consts.x;
+
+  cv::Mat1f mat_h = cv::Mat1f::ones(1,3);
+  mat_h[0][0] = vps[0].x/focal_length_2;
+  mat_h[0][1] = vps[0].y/focal_length_2;
+
+  cv::Mat1f mat_vp1 = mat_h.cross(cv::Mat(lines[2]));
+  cv::Mat1f mat_vp2 = mat_h.cross(cv::Mat(lines[3]));
+
+  vps[1] = cv::Point2f( mat_vp1[0][0]/mat_vp1[0][2],
+                        mat_vp1[0][1]/mat_vp1[0][2]);
+
+  vps[2] = cv::Point2f( mat_vp2[0][0]/mat_vp1[0][2],
+                        mat_vp2[0][1]/mat_vp1[0][2]);
+
+  if(focal_length)
+    (*focal_length) = sqrt(focal_length_2);
+
+  return vps;
+}
 
 }
