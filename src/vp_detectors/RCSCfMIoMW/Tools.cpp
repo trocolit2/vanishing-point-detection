@@ -2,6 +2,8 @@
 #include <VanishingPointDetectionTools.hpp>
 
 #include <iostream>
+#include <cmath>
+#include <limits>
 
 namespace vanishing_point {
 
@@ -45,6 +47,12 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
     vps[j] = definePointByEuclidianLinesIntersection( lines[j*2], lines[j*2+1]);
 
   double local_focal = -(vps[0].x*vps[1].x + vps[0].y*vps[1].y);
+  if(local_focal <= 0){
+    if(focal_length)
+      (*focal_length) = -1;
+    return std::vector<cv::Point2f>(3);
+  }
+
   local_focal = sqrt(local_focal);
 
   cv::Mat1f mat_K = cv::Mat1f::zeros(3,3);
@@ -61,6 +69,14 @@ std::vector<cv::Point2f> estimationVPby4LinesCase1(
   vp2 = mat_K * vp2;
   vps[2] = cv::Point2f(vp2[0][0]/vp2[0][2], vp2[0][1]/vp2[0][2]);
 
+  if( std::isinf( vps[2].x) || std::isinf( vps[2].y)
+      || std::isnan(vps[2].x) || std::isnan(vps[2].y) ){
+
+    if(focal_length)
+      (*focal_length) = -1;
+    return std::vector<cv::Point2f>(3);
+  }
+
   if(focal_length)
     (*focal_length) = local_focal;
 
@@ -74,6 +90,7 @@ std::vector<cv::Point2f> estimationVPby4LinesCase2(
   vps[0] = definePointByEuclidianLinesIntersection(lines[0], lines[1]);
 
   cv::Point3f consts(0,0,0);
+
   consts.x =                        lines[2].x*lines[3].x
              +                      lines[2].y*lines[3].y;
 
@@ -84,7 +101,7 @@ std::vector<cv::Point2f> estimationVPby4LinesCase2(
              - vps[0].y*            lines[2].z*lines[3].y
              - vps[0].x*            lines[2].x*lines[3].z
              - vps[0].y*            lines[2].y*lines[3].z
-             - vps[0].x*  vps[0].x* lines[2].y*lines[3].y;
+             + vps[0].x*  vps[0].x* lines[2].y*lines[3].y;
 
   consts.z =   vps[0].x*            lines[2].z*lines[3].z
              + vps[0].y*  vps[0].y* lines[2].z*lines[3].z;
@@ -98,25 +115,82 @@ std::vector<cv::Point2f> estimationVPby4LinesCase2(
   }
 
   delta = sqrt(delta);
-  double focal_length_2 = ((+consts.y)+delta)/2*consts.x;
+  cv::Vec2f roots( ((+consts.y)+delta)/(2*consts.x),
+                   ((-consts.y)+delta)/(2*consts.x));
 
-  cv::Mat1f mat_h = cv::Mat1f::ones(1,3);
-  mat_h[0][0] = vps[0].x/focal_length_2;
-  mat_h[0][1] = vps[0].y/focal_length_2;
+  double focal_length_2;
+  roots[0] > 0 ? focal_length_2 = roots[0] : focal_length_2 = roots[1];
 
-  cv::Mat1f mat_vp1 = mat_h.cross(cv::Mat(lines[2]));
-  cv::Mat1f mat_vp2 = mat_h.cross(cv::Mat(lines[3]));
+  cv::Point3f line_h( -vps[0].x/vps[0].y,
+                      -1.0,
+                      -1.0/(vps[0].y/focal_length_2));
 
-  vps[1] = cv::Point2f( mat_vp1[0][0]/mat_vp1[0][2],
-                        mat_vp1[0][1]/mat_vp1[0][2]);
+  vps[1] = definePointByEuclidianLinesIntersection(line_h, lines[2]);
+  vps[2] = definePointByEuclidianLinesIntersection(line_h, lines[3]);
 
-  vps[2] = cv::Point2f( mat_vp2[0][0]/mat_vp1[0][2],
-                        mat_vp2[0][1]/mat_vp1[0][2]);
+  for (uint i = 1; i < 3; i++) {
+    if( std::isinf( vps[i].x) || std::isinf( vps[i].y)
+        || std::isnan(vps[i].x) || std::isnan(vps[i].y) ){
+
+      if(focal_length)
+        (*focal_length) = -1;
+      return std::vector<cv::Point2f>(3);
+    }
+  }
 
   if(focal_length)
     (*focal_length) = sqrt(focal_length_2);
 
   return vps;
+}
+
+std::vector< std::vector<cv::Point2f> > estimationVPby4LinesInAll9Cases(
+                                    std::vector<cv::Point3f> lines,
+                                    std::vector<double> *vector_focal_length){
+
+  std::vector< std::vector<cv::Point2f> > vector_vps(9);
+  std::vector<double> vector_foco(9);
+
+  // case 1 original configuration
+  std::vector<cv::Point3f> temp_lines = lines;
+  vector_vps[0] = estimationVPby4LinesCase1(temp_lines, &vector_foco[0]);
+
+  // case 1 second configuration
+  temp_lines = {lines[1], lines[2], lines[3], lines[0]};
+  vector_vps[1] = estimationVPby4LinesCase1(temp_lines, &vector_foco[1]);
+
+  // case 1 third configuration
+  temp_lines = {lines[0], lines[2], lines[1], lines[3]};
+  vector_vps[2] = estimationVPby4LinesCase1(temp_lines, &vector_foco[2]);
+
+  // case 2 original configuration
+  temp_lines = lines;
+  vector_vps[3] = estimationVPby4LinesCase2(lines, &vector_foco[3]);
+
+  // case 2 second configuration
+  temp_lines = {lines[0], lines[2], lines[1], lines[3]};
+  vector_vps[4] = estimationVPby4LinesCase2(temp_lines, &vector_foco[4]);
+
+  // case 2 third configuration
+  temp_lines = {lines[0], lines[3], lines[1], lines[2]};
+  vector_vps[5] = estimationVPby4LinesCase2(temp_lines, &vector_foco[5]);
+
+  // case 2 fourth configuration
+  temp_lines = {lines[1], lines[2], lines[0], lines[3]};
+  vector_vps[6] = estimationVPby4LinesCase2(temp_lines, &vector_foco[6]);
+
+  // case 2 fifth configuration
+  temp_lines = {lines[1], lines[3], lines[0], lines[2]};
+  vector_vps[7] = estimationVPby4LinesCase2(temp_lines, &vector_foco[7]);
+
+  // case 2 sixth configuration
+  temp_lines = {lines[2], lines[3], lines[0], lines[1]};
+  vector_vps[8] = estimationVPby4LinesCase2(temp_lines, &vector_foco[8]);
+
+  if(vector_focal_length)
+    (*vector_focal_length) = vector_foco;
+
+  return vector_vps;
 }
 
 }

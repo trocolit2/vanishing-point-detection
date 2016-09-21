@@ -23,4 +23,9 @@ std::vector<cv::Point2f> estimationVPby4LinesCase2(
                                           std::vector<cv::Point3f> lines,
                                           double *focal_length = 0);
 
+std::vector< std::vector<cv::Point2f> > estimationVPby4LinesInAll9Cases(
+                                  std::vector<cv::Point3f> lines,
+                                  std::vector<double> *vector_focal_length = 0);
+
+
 }
