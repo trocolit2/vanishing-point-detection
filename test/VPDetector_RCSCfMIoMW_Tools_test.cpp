@@ -231,6 +231,11 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesInAll9Cases_testCase){
 
   cv::Mat3b image = cv::Mat3b::zeros(500,500);
   cv::Point2f center_point(image.cols/2, image.rows/2);
+  std::vector< std::vector<double> > gt_foco(2);
+  gt_foco[0] = {220.7940393500241, -1, 136.9306465080955, 170.5130470631207,
+                -1, 51.34580650552803, 161.7431171255828, -1, -1};
+  gt_foco[1] = {-1, 112.9158979063621, 112.9158979063621, 123.0318810308938,
+                2345.207879911715, 0.2059347336891552, -1, -1, -1};
 
   std::vector< std::vector<cv::Vec4f> > set4_segments(2);
   set4_segments[0]= {
@@ -265,10 +270,14 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesInAll9Cases_testCase){
     std::vector< std::vector<cv::Point2f> > vector_vps;
     vector_vps = estimationVPby4LinesInAll9Cases(lines, &vector_foco);
 
+    // std::cout << cv::Mat(vector_foco).t() <<std::endl;
     for (uint i = 0; i < vector_foco.size(); i++) {
-      std::cout << "Case "<< i <<" Foco "<< vector_foco[i] << " Mat "
-                <<  cv::Mat(vector_vps[i]) << std::endl;
+      BOOST_CHECK_CLOSE(vector_foco[i], gt_foco[k][i], 0.01);
     }
+    // for (uint i = 0; i < vector_foco.size(); i++) {
+    //   std::cout << "Case "<< i <<" Foco "<< vector_foco[i] << " Mat "
+    //             <<  cv::Mat(vector_vps[i]) << std::endl;
+    // }
 
     std::cout << std::endl;
   }

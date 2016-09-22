@@ -121,6 +121,12 @@ std::vector<cv::Point2f> estimationVPby4LinesCase2(
   double focal_length_2;
   roots[0] > 0 ? focal_length_2 = roots[0] : focal_length_2 = roots[1];
 
+  if(focal_length_2 < 0){
+    if(focal_length)
+      (*focal_length) = -1;
+    return std::vector<cv::Point2f>(3);
+  }
+
   cv::Point3f line_h( -vps[0].x/vps[0].y,
                       -1.0,
                       -1.0/(vps[0].y/focal_length_2));
