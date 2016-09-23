@@ -283,3 +283,23 @@ BOOST_AUTO_TEST_CASE(estimationVPby4LinesInAll9Cases_testCase){
   }
 
 }
+
+BOOST_AUTO_TEST_CASE(isPointLaySegmentLine_testCase){
+
+  std::vector<cv::Vec4f> segments = { cv::Vec4f(-3,-3,3,1),
+                                      cv::Vec4f(-1,8,1,2),
+                                      cv::Vec4f(-3,-3,3,1),
+                                      cv::Vec4f(-1,8,1,2)};
+
+  std::vector<cv::Point2f> points = {cv::Point2f(0,-1), cv::Point2f(0,5),
+                                     cv::Point2f(0,-0.999), cv::Point2f(0,0)};
+
+  std::vector<bool> gts = {true, true, false, false};
+
+  for (uint i = 0; i < points.size(); i++) {
+    bool result = isPointLaySegmentLine(points[i], segments[i]);
+    BOOST_CHECK_EQUAL(gts[i], result);
+    // std::cout << " Point lay on segment " << i << " " << result << std::endl;
+  }
+
+}
