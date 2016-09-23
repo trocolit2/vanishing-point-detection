@@ -27,5 +27,12 @@ std::vector< std::vector<cv::Point2f> > estimationVPby4LinesInAll9Cases(
                                   std::vector<cv::Point3f> lines,
                                   std::vector<double> *vector_focal_length = 0);
 
+bool isPointLaySegmentLine(cv::Point2f point,
+                           cv::Vec4f segment_points);
 
+std::vector< std::vector<cv::Point2f> > filterHypotheses(
+                            std::vector< std::vector<cv::Point2f> > vps,
+                            std::vector< double > &focos,
+                            std::vector< cv::Vec4f > segments,
+                            float threshold = 0.001);
 }

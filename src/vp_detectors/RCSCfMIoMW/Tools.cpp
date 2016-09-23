@@ -199,4 +199,47 @@ std::vector< std::vector<cv::Point2f> > estimationVPby4LinesInAll9Cases(
   return vector_vps;
 }
 
+bool isPointLaySegmentLine(cv::Point2f point,
+                           cv::Vec4f segment){
+  bool isCollinear =     ( (segment[2] - segment[0]) * (point.y - segment[1]) )
+                      == ( (point.x - segment[0]) * (segment[3] - segment[1]) );
+
+  bool isBetween = false;
+  if(isCollinear)
+    if(segment[0] != segment[2]){
+      isBetween =     (segment[0] <= point.x <= segment[2])
+                   || (segment[2] <= point.x <= segment[0]);
+    }else{
+      isBetween =     (segment[1] <= point.y <= segment[3])
+                   || (segment[3] <= point.y <= segment[1]);
+    }
+
+  return isBetween;
+
+}
+
+std::vector< std::vector<cv::Point2f> > filterHypotheses(
+                            std::vector< std::vector<cv::Point2f> > vps,
+                            std::vector< double > &focos,
+                            std::vector< cv::Vec4f > segments,
+                            float threshold){
+
+  std::vector< std::vector<cv::Point2f> > selected_vps;
+  std::vector< std::vector<cv::Point2f> > selected_focos;
+  for (uint i = 0; i < vps.size(); i++) {
+    if(focos[i] < 0)
+      continue;
+
+    // bool point_lay_segment = false;
+    // for (uint k = 0; k < count; k++) {
+    //   for (uint j = 0; j < count; j++) {
+    //     /* code */
+    //   }
+    // }
+
+  }
+
+}
+
+
 }
