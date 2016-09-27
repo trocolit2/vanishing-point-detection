@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE(isPointLaySegmentLine_testCase){
 //               cv::Vec4f(0.7, 0.4, 0.8, 0.5), cv::Vec4f(0.4, 0.6, 0.6, 0.7),
 //               cv::Vec4f(0.1, 0.8, 0.245, 0.534)};
 //   set4_segments[1]= {
-//               cv::Vec4f(0.6, 0.2, 0.7, 0.2), cv::Vec4f(0.5, 0.2, 0.5, 0.3),
+//               cv::Vec4f(0.6, 0.05, 0.7, 0.05), cv::Vec4f(0.5, 0.2, 0.5, 0.3),
 //               cv::Vec4f(0.8, 0.7, 0.7, 0.69), cv::Vec4f(0.2, 0.7, 0.3, 0.69),
 //               cv::Vec4f(0.942, 0.467, 0.712, 0.11)};
 //
@@ -386,6 +386,4 @@ BOOST_AUTO_TEST_CASE(isPointLaySegmentLine_testCase){
 //       image = cv::Mat3b::zeros(500,500);
 //     }
 //   }
-
-
 // }
