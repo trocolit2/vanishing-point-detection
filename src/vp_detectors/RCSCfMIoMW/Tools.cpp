@@ -222,51 +222,44 @@ bool isPointLaySegmentLine(cv::Point2f point,
 
 }
 
-// std::vector< std::vector<cv::Point2f> > filterHypotheses(
-//                             std::vector< std::vector<cv::Point2f> > vps,
-//                             std::vector< double > &focos,
-//                             std::vector< cv::Vec4f > segments,
-//                             double threshold){
-//
-//   std::vector< std::vector<cv::Point2f> > selected_vps;
-//   std::vector< double > selected_focos;
-//   for (uint i = 0; i < vps.size(); i++) {
-//     if(focos[i] < 0)
-//       continue;
-//
-//     bool point_lay_segment = false;
-//     for (uint k = 0; !point_lay_segment && k < vps[i].size(); k++)
-//       for (uint j = 0; !point_lay_segment && j < segments.size()-1; j++){
-//
-//         point_lay_segment = isPointLaySegmentLine(vps[i][k], segments[j]);
-//         std::cout<<"["<< i <<", "<<k<<", "<<j<<"]";
-//         if(point_lay_segment)
-//           std::cout<<" TRUE\n\n";
-//         else
-//           std::cout<<" FALSE\n\n";
-//       }
-//
-//     if(point_lay_segment)
-//       continue;
-//
-//     int count = 0;
-//     for (uint k = 0; k < vps[i].size(); k++){
-//       cv::Point3f homogeneos_vp(vps[i][k].x, vps[i][k].y, 1);
-//       for (uint j = 0; j < segments.size(); j++){
-//         double error_vp = errorLineSegmentPoint2VP(segments[j], homogeneos_vp);
-//         if(error_vp < threshold)
-//           count++;
-//       }
-//     }
-//
-//     if(count != (segments.size() -1))
-//       continue;
-//
-//     selected_vps.push_back(vps[i]);
-//     selected_focos.push_back(focos[i]);
-//   }
-//
-//   focos = selected_focos;
-//   return selected_vps;
-// }
+std::vector< std::vector<cv::Point2f> > filterHypotheses(
+                            std::vector< std::vector<cv::Point2f> > vps,
+                            std::vector< double > &focos,
+                            std::vector< cv::Vec4f > segments,
+                            double threshold){
+
+  std::vector< std::vector<cv::Point2f> > selected_vps;
+  std::vector< double > selected_focos;
+  for (uint i = 0; i < vps.size(); i++) {
+    if(focos[i] < 0)
+      continue;
+
+    bool point_lay_segment = false;
+    for (uint k = 0; !point_lay_segment && k < vps[i].size(); k++)
+      for (uint j = 0; !point_lay_segment && j < segments.size()-1; j++)
+        point_lay_segment = isPointLaySegmentLine(vps[i][k], segments[j]);
+
+    if(point_lay_segment)
+      continue;
+
+    int count = 0;
+    for (uint k = 0; k < vps[i].size(); k++){
+      cv::Point3f homogeneos_vp(vps[i][k].x, vps[i][k].y, 1);
+      for (uint j = 0; j < segments.size(); j++){
+        double error_vp = errorLineSegmentPoint2VP(segments[j], homogeneos_vp);
+        if(error_vp < threshold)
+          count++;
+      }
+    }
+
+    if(count != (segments.size() -1))
+      continue;
+
+    selected_vps.push_back(vps[i]);
+    selected_focos.push_back(focos[i]);
+  }
+
+  focos = selected_focos;
+  return selected_vps;
+}
 }
