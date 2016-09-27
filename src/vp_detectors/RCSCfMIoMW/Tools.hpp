@@ -35,4 +35,10 @@ std::vector< std::vector<cv::Point2f> > filterHypotheses(
                             std::vector< double > &focos,
                             std::vector< cv::Vec4f > segments,
                             double threshold = 0.01);
+
+std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
+                                std::vector<cv::Point3f> lines,
+                                uint iterations,
+                                double threshold = 0.1);
+
 }

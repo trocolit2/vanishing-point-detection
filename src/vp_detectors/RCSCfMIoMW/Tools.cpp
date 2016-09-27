@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <limits>
+#include <time.h>
 
 namespace vanishing_point {
 
@@ -262,4 +263,45 @@ std::vector< std::vector<cv::Point2f> > filterHypotheses(
   focos = selected_focos;
   return selected_vps;
 }
+
+
+std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
+                                std::vector<cv::Point3f> lines,
+                                uint iterations,
+                                double threshold){
+
+  // random values
+  std::time_t seconds;
+  std::time(&seconds);
+  std::srand((unsigned int) seconds);
+
+  std::vector<int> selected_index(5);
+  for (uint i = 0; i < iterations; i++) {
+      for (uint j = 0; j < 5; j++)
+        selected_index[j] = ( rand()%segments.size() );
+
+      std::cout << cv::Mat(selected_index).t() <<std::endl;
+      std::vector<cv::Vec4f> local_segments(5);
+      std::vector<cv::Point3f> local_lines(5);
+      for (uint j = 0; j < segments.size(); j++) {
+        local_segments[j] = segments[selected_index[j]];
+        local_lines[j] = lines[selected_index[j]];
+      }
+
+      // generate hypotheses
+      std::vector< double > temp_foco;
+      std::vector< std::vector<cv::Point2f> > temp_vps;
+      temp_vps = estimationVPby4LinesInAll9Cases(lines, &temp_foco);
+      temp_vps = filterHypotheses(temp_vps, temp_foco, local_segments);
+
+      // generate consensu set
+      for (uint j = 0; j < temp_vps.size(); j++) {
+
+      }
+  }
+
+  return std::vector<cv::Point2f>();
+}
+
+
 }
