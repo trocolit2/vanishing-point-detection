@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE(filterHypotheses_testCase){
 
   cv::Mat3b image = cv::Mat3b::zeros(500,500);
   cv::Point2f center_point(image.cols/2, image.rows/2);
-  std::vector< std::vector<cv::Vec4f> > set4_segments(2);
+  std::vector< std::vector<cv::Vec4f> > set4_segments(4);
   set4_segments[0]= {
               cv::Vec4f(0.6, 0.1, 0.7, 0.1), cv::Vec4f(0.55, 0.2, 0.55, 0.3),
               cv::Vec4f(0.7, 0.4, 0.8, 0.5), cv::Vec4f(0.4, 0.6, 0.6, 0.7),
@@ -321,10 +321,21 @@ BOOST_AUTO_TEST_CASE(filterHypotheses_testCase){
               cv::Vec4f(0.6, 0.05, 0.7, 0.05), cv::Vec4f(0.5, 0.2, 0.5, 0.3),
               cv::Vec4f(0.8, 0.7, 0.7, 0.69), cv::Vec4f(0.2, 0.7, 0.3, 0.69),
               cv::Vec4f(0.942, 0.467, 0.712, 0.11)};
+  set4_segments[2]= {
+              cv::Vec4f(0.3, 0.0, 0.4, 0.0), cv::Vec4f(0.3, 0.2, 0.4, 0.1),
+              cv::Vec4f(0.8, 0.9, 0.7, 0.88), cv::Vec4f(0.1, 0.9, 0.2, 0.899),
+              cv::Vec4f(0.987, 0.423, 0.481, 0.8853)};
+  set4_segments[3]= {
+              cv::Vec4f(0.3, 0.0, 0.4, 0.0), cv::Vec4f(0.3, 0.2, 0.4, 0.1),
+              cv::Vec4f(0.1, 0.7, 0.1, 0.8), cv::Vec4f(0.2, 0.9, 0.3, 0.9),
+              cv::Vec4f(0.98, 1.0, 1.0, 1.0)};
 
-  std::vector< std::vector<int> > gt_foco(2);
+  std::vector< std::vector<int> > gt_foco(4);
   gt_foco[0] = {220, 170, 51};
   gt_foco[1] = {152};
+  gt_foco[2] = {3962, 1857, 50322, 349, 398};
+  gt_foco[3] = {212};
+
 
   for (uint k = 0; k < set4_segments.size(); k++) {
 
@@ -381,16 +392,39 @@ BOOST_AUTO_TEST_CASE(filterHypotheses_testCase){
     //               vector_vps[j][(i+1)%3] + center_point,
     //               cv::Scalar(0, 255), image.rows * 0.008);
     //   }
-    //
-    //   // std::vector<cv::Point2f> vps_check = {vps[0], vps[1], vp3};
-    //   // for (uint i = 0; i < vps.size(); i++)
-    //   //   cv::line( image, vps_check[i%3] + center_point, vps_check[(i+1)%3] + center_point,
-    //   //             cv::Scalar(255, 255), image.rows * 0.002);
-    //
-    //
-    //   cv::imshow("out", image);
-    //   cv::waitKey();
-    //   image = cv::Mat3b::zeros(500,500);
+    // cv::imshow("out", image);
+    // cv::waitKey();
+    // image = cv::Mat3b::zeros(500,500);
     // }
   }
+}
+
+BOOST_AUTO_TEST_CASE(RANSAC_testCase){
+
+  cv::Mat3b image = cv::Mat3b::zeros(500,500);
+  cv::Point2f center_point(image.cols/2, image.rows/2);
+  std::vector<cv::Vec4f> line_segments = {
+              cv::Vec4f(0.6, 0.1, 0.7, 0.1), cv::Vec4f(0.55, 0.2, 0.55, 0.3),
+              cv::Vec4f(0.7, 0.4, 0.8, 0.5), cv::Vec4f(0.4, 0.6, 0.6, 0.7),
+              cv::Vec4f(0.1, 0.8, 0.245, 0.534)};
+
+
+  for (uint i = 0; i < line_segments.size(); i++) {
+    cv::Mat temp_mat = cv::Mat(line_segments).row(i);
+    for (uint j = 0; j < 2; j++) {
+      cv::Mat1f local_mat(temp_mat);
+      local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
+      local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
+    }
+  }
+
+  std::vector<cv::Point3f> lines;
+  for (uint i = 0; i < line_segments.size()-1; i++) {
+    cv::Point2f initial_point(line_segments[i][0], line_segments[i][1]);
+    cv::Point2f end_point(line_segments[i][2], line_segments[i][3]);
+    lines.push_back(defineEuclidianLineBy2Points(initial_point, end_point));
+  }
+
+  RANSAC(line_segments, lines, 10);
+
 }
