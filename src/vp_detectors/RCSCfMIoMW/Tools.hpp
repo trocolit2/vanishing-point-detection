@@ -34,5 +34,5 @@ std::vector< std::vector<cv::Point2f> > filterHypotheses(
                             std::vector< std::vector<cv::Point2f> > vps,
                             std::vector< double > &focos,
                             std::vector< cv::Vec4f > segments,
-                            float threshold = 0.001);
+                            double threshold = 0.01);
 }

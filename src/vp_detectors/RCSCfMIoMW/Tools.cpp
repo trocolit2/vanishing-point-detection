@@ -207,11 +207,11 @@ bool isPointLaySegmentLine(cv::Point2f point,
   bool isBetween = false;
   if(isCollinear)
     if(segment[0] != segment[2]){
-      isBetween =     (segment[0] <= point.x <= segment[2])
-                   || (segment[2] <= point.x <= segment[0]);
+      isBetween =     ((segment[0] <= point.x) && (point.x <= segment[2]))
+                   || ((segment[2] <= point.x) && (point.x <= segment[0]));
     }else{
-      isBetween =     (segment[1] <= point.y <= segment[3])
-                   || (segment[3] <= point.y <= segment[1]);
+      isBetween =     ((segment[1] <= point.y) && (point.y <= segment[3]))
+                   || ((segment[3] <= point.y) && (point.y <= segment[1]));
     }
 
   return isBetween;
@@ -222,23 +222,40 @@ std::vector< std::vector<cv::Point2f> > filterHypotheses(
                             std::vector< std::vector<cv::Point2f> > vps,
                             std::vector< double > &focos,
                             std::vector< cv::Vec4f > segments,
-                            float threshold){
+                            double threshold){
 
   std::vector< std::vector<cv::Point2f> > selected_vps;
-  std::vector< std::vector<cv::Point2f> > selected_focos;
+  std::vector< double > selected_focos;
   for (uint i = 0; i < vps.size(); i++) {
     if(focos[i] < 0)
       continue;
 
     // bool point_lay_segment = false;
-    // for (uint k = 0; k < count; k++) {
-    //   for (uint j = 0; j < count; j++) {
-    //     /* code */
+    // for (uint k = 0; !point_lay_segment && k < vps[i].size(); k++)
+    //   for (uint j = 0; !point_lay_segment && j < segments.size()-1; j++)
+    //     point_lay_segment = isPointLaySegmentLine(vps[i][k], segments[j]);
+    //
+    // if(point_lay_segment)
+    //   continue;
+    //
+    // int count = 0;
+    // for (uint k = 0; k < vps[i].size(); k++){
+    //   cv::Point3f homogeneos_vp(vps[i][k].x, vps[i][k].y, 1);
+    //   for (uint j = 0; j < segments.size(); j++){
+    //     double error_vp = errorLineSegmentPoint2VP(segments[j], homogeneos_vp);
+    //     if(error_vp < threshold)
+    //       count++;
     //   }
     // }
+    //
+    // if(count != (segments.size() -1)){
+    //   continue;
 
+    selected_vps.push_back(vps[i]);
+    selected_focos.push_back(focos[i]);
   }
-
+  focos = selected_focos;
+  return selected_vps;
 }
 
 
