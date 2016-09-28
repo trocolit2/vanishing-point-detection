@@ -265,6 +265,27 @@ std::vector< std::vector<cv::Point2f> > filterHypotheses(
 }
 
 
+uint consensusSet(std::vector<cv::Point2f> vps,
+                  std::vector<cv::Vec4f> segments,
+                  std::vector<int> &lines_cluster,
+                  double threshold){
+
+  std::vector<int> cluster(segments.size(),-1);
+  uint count = 0;
+  for (uint i = 0; i < segments.size(); i++)
+    for (uint j = 0; j < vps.size(); j++) {
+      double error = errorLineSegmentPoint2VP(segments[i],
+                                            cv::Point3f(vps[j].x, vps[j].y,1));
+      if(error < threshold){
+        count++;
+        cluster[i] = j;
+        break;
+      }
+    }
+    lines_cluster = cluster;
+    return count;
+}
+
 std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
                                 std::vector<cv::Point3f> lines,
                                 uint iterations,
@@ -275,12 +296,15 @@ std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
   std::time(&seconds);
   std::srand((unsigned int) seconds);
 
+
+  std::vector<int> line_cluster;
+  uint count_final = 0;
   std::vector<int> selected_index(5);
   for (uint i = 0; i < iterations; i++) {
       for (uint j = 0; j < 5; j++)
         selected_index[j] = ( rand()%segments.size() );
 
-      std::cout << cv::Mat(selected_index).t() <<std::endl;
+      // std::cout << cv::Mat(selected_index).t() <<std::endl;
       std::vector<cv::Vec4f> local_segments(5);
       std::vector<cv::Point3f> local_lines(5);
       for (uint j = 0; j < segments.size(); j++) {
@@ -296,6 +320,13 @@ std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
 
       // generate consensu set
       for (uint j = 0; j < temp_vps.size(); j++) {
+        // std::vector<int> temp_cluster(lines.size(),-1);
+        // uint count_temp = 0;
+        // for (uint k = 0; k < lines.size(); k++)
+        //   for (uint l = 0; l < temp_vps[j].size(); l++) {
+        //     /* code */
+        //   }
+
 
       }
   }

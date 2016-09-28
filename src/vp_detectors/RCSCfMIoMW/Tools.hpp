@@ -36,9 +36,15 @@ std::vector< std::vector<cv::Point2f> > filterHypotheses(
                             std::vector< cv::Vec4f > segments,
                             double threshold = 0.01);
 
+uint consensusSet(std::vector<cv::Point2f> vps,
+                  std::vector<cv::Vec4f> segments,
+                  std::vector<int> &lines_cluster,
+                  double threshold = 0.1);
+
 std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
                                 std::vector<cv::Point3f> lines,
                                 uint iterations,
                                 double threshold = 0.1);
+
 
 }
