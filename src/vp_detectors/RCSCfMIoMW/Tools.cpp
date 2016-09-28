@@ -274,11 +274,10 @@ uint consensusSet(std::vector<cv::Point2f> vps,
     for (uint j = 0; j < vps.size(); j++) {
       double error = errorLineSegmentPoint2VP(segments[i],
                                             cv::Point3f(vps[j].x, vps[j].y,1));
-      std::cout<<"I " << i << "ERROR " << error << std::endl;
       if(error < threshold){
         count++;
         cluster[i] = j;
-        // break;
+        break;
       }
     }
     lines_cluster = cluster;
