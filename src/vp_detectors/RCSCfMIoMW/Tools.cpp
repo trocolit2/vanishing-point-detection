@@ -16,8 +16,7 @@ cv::Point2f lineSegmentCenterPoint(cv::Vec4f line_segment){
 
 double distancePoint2Line(cv::Point3f line, cv::Point2f point){
   double distance = line.x*point.x + line.y*point.y + line.z;
-  distance = abs(distance)/(sqrt(line.x*line.x + line.y*line.y));
-  return distance;
+  return fabs(distance)/(sqrt(line.x*line.x + line.y*line.y));
 }
 
 double errorLineSegmentPoint2VP(  cv::Vec4f line_segment,
@@ -35,7 +34,6 @@ double errorLineSegmentPoint2VP(  cv::Vec4f line_segment,
   if(center_point && end_point && line_center_vp){
 
   }
-
   return distancePoint2Line(line, local_end_point);
 }
 
@@ -276,10 +274,11 @@ uint consensusSet(std::vector<cv::Point2f> vps,
     for (uint j = 0; j < vps.size(); j++) {
       double error = errorLineSegmentPoint2VP(segments[i],
                                             cv::Point3f(vps[j].x, vps[j].y,1));
+      std::cout<<"I " << i << "ERROR " << error << std::endl;
       if(error < threshold){
         count++;
         cluster[i] = j;
-        break;
+        // break;
       }
     }
     lines_cluster = cluster;
