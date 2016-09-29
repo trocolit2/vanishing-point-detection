@@ -287,6 +287,7 @@ uint consensusSet(std::vector<cv::Point2f> vps,
 std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
                                 std::vector<cv::Point3f> lines,
                                 uint iterations,
+                                std::vector<int> &line_cluster,
                                 double threshold){
 
   // random values
@@ -294,42 +295,49 @@ std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
   std::time(&seconds);
   std::srand((unsigned int) seconds);
 
-
-  std::vector<int> line_cluster;
+  std::vector<cv::Point2f> vps_final;
   uint count_final = 0;
+
   std::vector<int> selected_index(5);
   for (uint i = 0; i < iterations; i++) {
       for (uint j = 0; j < 5; j++)
         selected_index[j] = ( rand()%segments.size() );
 
       // std::cout << cv::Mat(selected_index).t() <<std::endl;
+      // std::cout <<"Passei aqui 1" <<std::endl;
       std::vector<cv::Vec4f> local_segments(5);
       std::vector<cv::Point3f> local_lines(5);
-      for (uint j = 0; j < segments.size(); j++) {
-        local_segments[j] = segments[selected_index[j]];
-        local_lines[j] = lines[selected_index[j]];
+      for (uint j = 0; j < local_segments.size(); j++) {
+        local_segments[j] = segments[ selected_index[j] ];
+        local_lines[j] = lines[ selected_index[j] ];
       }
 
+      // std::cout <<cv::Mat(local_segments) <<std::endl;
+      // std::cout <<cv::Mat(local_lines) <<std::endl;
+      // std::cout <<"Passei aqui 2" <<std::endl;
       // generate hypotheses
       std::vector< double > temp_foco;
       std::vector< std::vector<cv::Point2f> > temp_vps;
-      temp_vps = estimationVPby4LinesInAll9Cases(lines, &temp_foco);
+      temp_vps = estimationVPby4LinesInAll9Cases(local_lines, &temp_foco);
       temp_vps = filterHypotheses(temp_vps, temp_foco, local_segments);
 
+      // std::cout <<"Passei aqui 3" <<std::endl;
       // generate consensu set
       for (uint j = 0; j < temp_vps.size(); j++) {
-        // std::vector<int> temp_cluster(lines.size(),-1);
-        // uint count_temp = 0;
-        // for (uint k = 0; k < lines.size(); k++)
-        //   for (uint l = 0; l < temp_vps[j].size(); l++) {
-        //     /* code */
-        //   }
-
-
+        std::vector<int> local_cluster;
+        uint local_count = consensusSet(temp_vps[j], segments,
+                                        local_cluster, threshold);
+        // std::cout << "COUNT " << local_count << " " << count_final <<std::endl;
+        if(local_count > count_final){
+          vps_final = temp_vps[j];
+          line_cluster = local_cluster;
+          count_final = local_count;
+        }
       }
+      // std::cout <<"Passei aqui 4" <<std::endl;
   }
-
-  return std::vector<cv::Point2f>();
+  // std::cout <<"Passei aqui 5" <<std::endl;
+  return vps_final;
 }
 
 
