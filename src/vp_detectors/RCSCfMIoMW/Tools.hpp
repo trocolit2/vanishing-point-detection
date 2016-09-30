@@ -30,6 +30,10 @@ std::vector< std::vector<cv::Point2f> > estimationVPby4LinesInAll9Cases(
 bool isPointLaySegmentLine(cv::Point2f point,
                            cv::Vec4f segment_points);
 
+cv::Point2f checkVPTriangle(cv::Point2f vp1,
+                           cv::Point2f vp2,
+                           cv::Point2f center);
+
 std::vector< std::vector<cv::Point2f> > filterHypotheses(
                             std::vector< std::vector<cv::Point2f> > vps,
                             std::vector< double > &focos,
@@ -40,6 +44,7 @@ uint consensusSet(std::vector<cv::Point2f> vps,
                   std::vector<cv::Vec4f> segments,
                   std::vector<int> &lines_cluster,
                   double threshold = 0.1);
+
 
 std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
                                 std::vector<cv::Point3f> lines,

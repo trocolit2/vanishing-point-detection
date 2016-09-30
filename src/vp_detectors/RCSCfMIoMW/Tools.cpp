@@ -5,6 +5,7 @@
 #include <cmath>
 #include <limits>
 #include <time.h>
+#include <set>
 
 namespace vanishing_point {
 
@@ -221,38 +222,66 @@ bool isPointLaySegmentLine(cv::Point2f point,
 
 }
 
+cv::Point2f checkVPTriangle(cv::Point2f vp1,
+                            cv::Point2f vp2,
+                            cv::Point2f center){
+  double alpha1 = -1/((vp1.y - center.y)/(vp1.x - center.x));
+  double alpha2 = -1/((vp2.y - center.y)/(vp2.x - center.x));
+
+  double const1 = vp2.y - vp2.x*alpha1;
+  double const2 = vp1.y - vp1.x*alpha2;
+
+  cv::Point3f line1(alpha1, -1, const1);
+  cv::Point3f line2(alpha2, -1, const2);
+
+  return definePointByEuclidianLinesIntersection(line1, line2);
+}
+
+
 std::vector< std::vector<cv::Point2f> > filterHypotheses(
                             std::vector< std::vector<cv::Point2f> > vps,
                             std::vector< double > &focos,
                             std::vector< cv::Vec4f > segments,
                             double threshold){
 
+  float epslon = 1e-3;
   std::vector< std::vector<cv::Point2f> > selected_vps;
   std::vector< double > selected_focos;
   for (uint i = 0; i < vps.size(); i++) {
     if(focos[i] < 0)
       continue;
 
-    bool point_lay_segment = false;
-    for (uint k = 0; !point_lay_segment && k < vps[i].size(); k++)
-      for (uint j = 0; !point_lay_segment && j < segments.size()-1; j++)
-        point_lay_segment = isPointLaySegmentLine(vps[i][k], segments[j]);
-
-    if(point_lay_segment)
+    cv::Point2f vp_check = checkVPTriangle( vps[i][0], vps[i][1],
+                                           cv::Point2f(0,0));
+    std::cout<<" VP CHECK "<< vp_check <<std::endl;
+    cv::Point2f differ = vp_check - vps[i][2];
+    if(fabs(differ.x) > epslon || fabs(differ.y) > epslon)
       continue;
 
-    int count = 0;
-    for (uint k = 0; k < vps[i].size(); k++){
-      cv::Point3f homogeneos_vp(vps[i][k].x, vps[i][k].y, 1);
-      for (uint j = 0; j < segments.size(); j++){
-        double error_vp = errorLineSegmentPoint2VP(segments[j], homogeneos_vp);
-        if(error_vp < threshold)
-          count++;
-      }
-    }
-
-    if(count != (segments.size() -1))
+    if( std::isinf( vp_check.x) || std::isinf( vp_check.y)
+        || std::isnan(vp_check.x) || std::isnan(vp_check.y) )
       continue;
+
+    // bool point_lay_segment = false;
+    // for (uint k = 0; !point_lay_segment && k < vps[i].size(); k++)
+    //   for (uint j = 0; !point_lay_segment && j < segments.size()-1; j++)
+    //     point_lay_segment = isPointLaySegmentLine(vps[i][k], segments[j]);
+    //
+    // if(point_lay_segment)
+    //   continue;
+    //
+    // int count = 0;
+    // for (uint k = 0; k < vps[i].size(); k++){
+    //   cv::Point3f homogeneos_vp(vps[i][k].x, vps[i][k].y, 1);
+    //   for (uint j = 0; j < segments.size(); j++){
+    //     double error_vp = errorLineSegmentPoint2VP(segments[j], homogeneos_vp);
+    //     if(error_vp < threshold)
+    //       count++;
+    //   }
+    // }
+    //
+    // if(count != (segments.size() -1))
+    //   continue;
 
     selected_vps.push_back(vps[i]);
     selected_focos.push_back(focos[i]);
@@ -284,61 +313,71 @@ uint consensusSet(std::vector<cv::Point2f> vps,
     return count;
 }
 
-std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
-                                std::vector<cv::Point3f> lines,
-                                uint iterations,
-                                std::vector<int> &line_cluster,
-                                double threshold){
-
-  // random values
-  std::time_t seconds;
-  std::time(&seconds);
-  std::srand((unsigned int) seconds);
-
-  std::vector<cv::Point2f> vps_final;
-  uint count_final = 0;
-
-  std::vector<int> selected_index(5);
-  for (uint i = 0; i < iterations; i++) {
-      for (uint j = 0; j < 5; j++)
-        selected_index[j] = ( rand()%segments.size() );
-
-      // std::cout << cv::Mat(selected_index).t() <<std::endl;
-      // std::cout <<"Passei aqui 1" <<std::endl;
-      std::vector<cv::Vec4f> local_segments(5);
-      std::vector<cv::Point3f> local_lines(5);
-      for (uint j = 0; j < local_segments.size(); j++) {
-        local_segments[j] = segments[ selected_index[j] ];
-        local_lines[j] = lines[ selected_index[j] ];
-      }
-
-      // std::cout <<cv::Mat(local_segments) <<std::endl;
-      // std::cout <<cv::Mat(local_lines) <<std::endl;
-      // std::cout <<"Passei aqui 2" <<std::endl;
-      // generate hypotheses
-      std::vector< double > temp_foco;
-      std::vector< std::vector<cv::Point2f> > temp_vps;
-      temp_vps = estimationVPby4LinesInAll9Cases(local_lines, &temp_foco);
-      temp_vps = filterHypotheses(temp_vps, temp_foco, local_segments);
-
-      // std::cout <<"Passei aqui 3" <<std::endl;
-      // generate consensu set
-      for (uint j = 0; j < temp_vps.size(); j++) {
-        std::vector<int> local_cluster;
-        uint local_count = consensusSet(temp_vps[j], segments,
-                                        local_cluster, threshold);
-        // std::cout << "COUNT " << local_count << " " << count_final <<std::endl;
-        if(local_count > count_final){
-          vps_final = temp_vps[j];
-          line_cluster = local_cluster;
-          count_final = local_count;
-        }
-      }
-      // std::cout <<"Passei aqui 4" <<std::endl;
-  }
-  // std::cout <<"Passei aqui 5" <<std::endl;
-  return vps_final;
-}
+// std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
+//                                 std::vector<cv::Point3f> lines,
+//                                 uint iterations,
+//                                 std::vector<int> &line_cluster,
+//                                 double threshold){
+//
+//   // random values
+//   std::time_t seconds;
+//   std::time(&seconds);
+//   std::srand((unsigned int) seconds);
+//
+//   std::vector<cv::Point2f> vps_final;
+//   uint count_final = 0;
+//
+//
+//   // std::vector<int> selected_index(5);
+//   for (uint i = 0; i < iterations; i++) {
+//     std::set<int> selected_index;
+//     while(selected_index.size() < 5)
+//        selected_index.insert(rand()%segments.size());
+//
+//       // for (uint j = 0; j < 5; j++)
+//       //   selected_index[j] = ( rand()%segments.size() );
+//
+//       // std::cout << cv::Mat(selected_index).t() <<std::endl;
+//       // std::cout <<"Passei aqui 1" <<std::endl;
+//       std::vector<cv::Vec4f> local_segments;
+//       std::vector<cv::Point3f> local_lines;
+//       std::set<int>::iterator it_set;
+//       for (it_set = selected_index.begin();
+//            it_set != selected_index.end(); it_set++) {
+//
+//         std::cout << *it_set <<", ";
+//         local_segments.push_back(segments[*it_set]);
+//         local_lines.push_back(lines[*it_set]);
+//       }
+//       std::cout<<std::endl;
+//
+//       // std::cout <<cv::Mat(local_segments) <<std::endl;
+//       // std::cout <<cv::Mat(local_lines) <<std::endl;
+//       // std::cout <<"Passei aqui 2" <<std::endl;
+//       // generate hypotheses
+//       std::vector< double > temp_foco;
+//       std::vector< std::vector<cv::Point2f> > temp_vps;
+//       temp_vps = estimationVPby4LinesInAll9Cases(local_lines, &temp_foco);
+//       temp_vps = filterHypotheses(temp_vps, temp_foco, local_segments);
+//
+//       // std::cout <<"Passei aqui 3" <<std::endl;
+//       // generate consensu set
+//       for (uint j = 0; j < temp_vps.size(); j++) {
+//         std::vector<int> local_cluster;
+//         uint local_count = consensusSet(temp_vps[j], segments,
+//                                         local_cluster, threshold);
+//         // std::cout << "COUNT " << local_count << " " << count_final <<std::endl;
+//         if(local_count > count_final){
+//           vps_final = temp_vps[j];
+//           line_cluster = local_cluster;
+//           count_final = local_count;
+//         }
+//       }
+//       // std::cout <<"Passei aqui 4" <<std::endl;
+//   }
+//   // std::cout <<"Passei aqui 5" <<std::endl;
+//   return vps_final;
+// }
 
 
 }
