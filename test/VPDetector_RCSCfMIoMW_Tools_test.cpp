@@ -16,21 +16,6 @@
 
 using namespace vanishing_point;
 
-cv::Point2f checkVPTriangle(cv::Point2f vp1,
-                            cv::Point2f vp2,
-                            cv::Point2f center){
-  double alpha1 = -1/((vp1.y - center.y)/(vp1.x - center.x));
-  double alpha2 = -1/((vp2.y - center.y)/(vp2.x - center.x));
-
-  double const1 = vp2.y - vp2.x*alpha1;
-  double const2 = vp1.y - vp1.x*alpha2;
-
-  cv::Point3f line1(alpha1, -1, const1);
-  cv::Point3f line2(alpha2, -1, const2);
-
-  return definePointByEuclidianLinesIntersection(line1, line2);
-}
-
 BOOST_AUTO_TEST_CASE(centerPoint_testCase){
 
   std::vector<cv::Vec4f> line_segments = {cv::Vec4f(0,0,10,10),
@@ -331,10 +316,10 @@ BOOST_AUTO_TEST_CASE(filterHypotheses_testCase){
               cv::Vec4f(0.98, 1.0, 1.0, 1.0)};
 
   std::vector< std::vector<double> > gt_foco(4);
-  gt_foco[0] = {220, 170, 51};
-  gt_foco[1] = {152, 0.1159};
-  gt_foco[2] = {3962, 225.55959924707261, 1857, 50322, 349, 398};
-  gt_foco[3] = {200, 212};
+  gt_foco[0] = {220};
+  gt_foco[1] = {138, 138, 152};
+  gt_foco[2] = {221.73};
+  gt_foco[3] = {223};
 
 
   for (uint k = 0; k < set4_segments.size(); k++) {
@@ -370,8 +355,6 @@ BOOST_AUTO_TEST_CASE(filterHypotheses_testCase){
 
     // DEBUG
     // std::cout << "FINAL FOCO " <<  cv::Mat(vector_foco).t() << std::endl;
-    // std::cout << "VPS FINAL " <<  cv::Mat(vps) << std::endl;
-    // std::cout << "VP Check " << vp3 << std::endl;
     //
     // for (uint j = 0; j < vector_vps.size(); j++) {
     //
@@ -451,66 +434,71 @@ BOOST_AUTO_TEST_CASE(consensusSet_testCase){
 
 
 
-BOOST_AUTO_TEST_CASE(RANSAC_testCase){
-
-  cv::Mat3b image = cv::Mat3b::zeros(1000,1000);
-  cv::Point2f center_point(image.cols/2, image.rows/2);
-  std::vector<cv::Vec4f> segments = {  cv::Vec4f(0.4, 0, 0.45, 0.05),
-          cv::Vec4f(0.6, 0.05, 0.65, 0),    cv::Vec4f(0.15, 0.1, 0.2, 0.1),
-          cv::Vec4f(0.8, 0.1, 0.85, 0.1),   cv::Vec4f(0.45, 0.2, 0.5, 0.15),
-          cv::Vec4f(0.65, 0.15, 0.7, 0.2),  cv::Vec4f(0.15, 0.3, 0.2, 0.35),
-          cv::Vec4f(0.05, 0.5, 0.1, 0.5),   cv::Vec4f(0.4, 0.45, 0.45, 0.4),
-          cv::Vec4f(0.6, 0.5, 0.65, 0.5),   cv::Vec4f(0.35, 0.6, 0.35, 0.65),
-          cv::Vec4f(0.6, 0.75, 0.65, 0.8),  cv::Vec4f(0.9, 0, 0.9, 0.05),
-          cv::Vec4f(0.8, 0.5, 0.85, 0.55),  cv::Vec4f(0.95, 0.55, 1.0, 0.5),
-          cv::Vec4f(0.95, 0.65, 1.0, 0.7), cv::Vec4f(0.75, 0.75, 0.8, 0.7),
-          cv::Vec4f(0.9, 0.95, 0.9, 1.0)};
-
-
-  // std::cout <<"Passei aqui 01" <<std::endl;
-  for (uint i = 0; i < segments.size(); i++) {
-    cv::Mat temp_mat = cv::Mat(segments).row(i);
-    for (uint j = 0; j < 2; j++) {
-      cv::Mat1f local_mat(temp_mat);
-      local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
-      local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
-    }
-  }
-  // std::cout <<"Passei aqui 02" <<std::endl;
-
-  std::vector<cv::Point3f> lines;
-  for (uint i = 0; i < segments.size()-1; i++) {
-    cv::Point2f initial_point(segments[i][0], segments[i][1]);
-    cv::Point2f end_point(segments[i][2], segments[i][3]);
-    lines.push_back(defineEuclidianLineBy2Points(initial_point, end_point));
-  }
-
-  // std::cout <<"Passei aqui 03" <<std::endl;
-  std::vector<int> lines_cluster;
-  std::vector<cv::Point2f> vps = RANSAC(segments, lines, 1000, lines_cluster);
-  // std::cout <<"Passei aqui 6" <<std::endl;
-
-  std::cout << cv::Mat(lines_cluster).t() << std::endl;
-  for (uint i = 0; i < segments.size(); i++) {
-    cv::Scalar color (255, 255, 255);
-    if(lines_cluster[i] == 0){
-      color =  cv::Scalar(255, 0, 0);
-    }else if(lines_cluster[i] == 1){
-      color =  cv::Scalar(0, 255, 0);
-    }else if(lines_cluster[i] == 2){
-      color =  cv::Scalar(0, 0, 255);
-    }
-    cv::line( image,
-            cv::Point2f(segments[i][0] + center_point.x, segments[i][1] + center_point.y),
-            cv::Point2f(segments[i][2] + + center_point.x, segments[i][3] + + center_point.y),
-            color, image.rows * 0.004);
-  }
-
-  std::cout << cv::Mat(vps) << std::endl;
-  for (uint i = 0; i < vps.size(); i++)
-    cv::circle( image, vps[i] + center_point, image.rows * 0.004, cv::Scalar(255,255), -1);
-    cv::imshow("out", image);
-
-  cv::waitKey();
-
-}
+// BOOST_AUTO_TEST_CASE(RANSAC_testCase){
+//
+//   cv::Mat3b image = cv::Mat3b::zeros(1000,1000);
+//   cv::Point2f center_point(image.cols/2, image.rows/2);
+//   std::vector<cv::Vec4f> segments = {  cv::Vec4f(0.4, 0, 0.45, 0.05),
+//           cv::Vec4f(0.6, 0.05, 0.65, 0),    cv::Vec4f(0.15, 0.1, 0.2, 0.1),
+//           cv::Vec4f(0.8, 0.1, 0.85, 0.1),   cv::Vec4f(0.45, 0.2, 0.5, 0.15),
+//           cv::Vec4f(0.65, 0.15, 0.7, 0.2),  cv::Vec4f(0.15, 0.3, 0.2, 0.35),
+//           cv::Vec4f(0.05, 0.5, 0.1, 0.5),   cv::Vec4f(0.4, 0.45, 0.45, 0.4),
+//           cv::Vec4f(0.6, 0.5, 0.65, 0.5),   cv::Vec4f(0.35, 0.6, 0.35, 0.65),
+//           cv::Vec4f(0.6, 0.75, 0.65, 0.8),  cv::Vec4f(0.9, 0, 0.9, 0.05),
+//           cv::Vec4f(0.8, 0.5, 0.85, 0.55),  cv::Vec4f(0.95, 0.55, 1.0, 0.5),
+//           cv::Vec4f(0.95, 0.65, 1.0, 0.7), cv::Vec4f(0.75, 0.75, 0.8, 0.7),
+//           cv::Vec4f(0.9, 0.95, 0.9, 1.0)};
+//
+//
+//   // std::cout <<"Passei aqui 01" <<std::endl;
+//   for (uint i = 0; i < segments.size(); i++) {
+//     cv::Mat temp_mat = cv::Mat(segments).row(i);
+//     for (uint j = 0; j < 2; j++) {
+//       cv::Mat1f local_mat(temp_mat);
+//       local_mat[0][j*2] = local_mat[0][j*2]*image.cols - center_point.x;
+//       local_mat[0][j*2+1] = local_mat[0][j*2+1]*image.rows - center_point.y;
+//     }
+//   }
+//   // std::cout <<"Passei aqui 02" <<std::endl;
+//
+//   std::vector<cv::Point3f> lines;
+//   for (uint i = 0; i < segments.size()-1; i++) {
+//     cv::Point2f initial_point(segments[i][0], segments[i][1]);
+//     cv::Point2f end_point(segments[i][2], segments[i][3]);
+//     lines.push_back(defineEuclidianLineBy2Points(initial_point, end_point));
+//   }
+//
+//   // std::cout <<"Passei aqui 03" <<std::endl;
+//   std::vector<int> lines_cluster;
+//   std::vector<cv::Point2f> vps = RANSAC(segments, lines, 10, lines_cluster);
+//   // std::cout <<"Passei aqui 6" <<std::endl;
+//
+//
+//
+//   std::cout << cv::Mat(lines_cluster).t() << std::endl;
+//   for (uint i = 0; i < segments.size(); i++) {
+//     cv::Scalar color (255, 255, 255);
+//     if(lines_cluster[i] == 0){
+//       color =  cv::Scalar(255, 0, 0);
+//     }else if(lines_cluster[i] == 1){
+//       color =  cv::Scalar(0, 255, 0);
+//     }else if(lines_cluster[i] == 2){
+//       color =  cv::Scalar(0, 0, 255);
+//     }
+//     cv::line( image,
+//             cv::Point2f(segments[i][0] + center_point.x, segments[i][1] + center_point.y),
+//             cv::Point2f(segments[i][2] + + center_point.x, segments[i][3] + + center_point.y),
+//             color, image.rows * 0.004);
+//   }
+//
+//   std::cout << cv::Mat(vps) << std::endl;
+//   cv::Point2f vp_check = checkVPTriangle(vps[0], vps[1], cv::Point2f(0,0));
+//   std::cout << vp_check << std::endl;
+//
+//   for (uint i = 0; i < vps.size(); i++)
+//     cv::circle( image, vps[i] + center_point, image.rows * 0.004, cv::Scalar(255,255), -1);
+//     cv::imshow("out", image);
+//
+//   cv::waitKey();
+//
+// }
