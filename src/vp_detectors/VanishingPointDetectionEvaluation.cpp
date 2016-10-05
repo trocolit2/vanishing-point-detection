@@ -73,8 +73,8 @@ std::vector<double> VPDE runEvaluation( VanishingPointDetection *detector){
     std::vector<int> lines_by_vp;
     std::vector<cv::Vec4f> lines_segments;
 
-    detected_vps = detector->applyVPDetector( image, &lines_by_vp,
-                                                    &lines_segments );
+    detected_vps = detector->applyVPDetector( image, lines_segments ,
+                                              &lines_by_vp);
     // get zenith point
     cv::Point2f zenith = detected_vps[1];
 

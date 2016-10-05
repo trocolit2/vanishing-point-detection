@@ -11,9 +11,17 @@ class RCSCfMIoMW : public VanishingPointDetection{
     RCSCfMIoMW();
 
     std::vector<cv::Point2f> applyVPDetector(
-                              cv::Mat image,
-                              std::vector<int> *line_id_by_vp = 0,
-                              std::vector<cv::Vec4f> *lines_segments = 0 );
+                                  cv::Mat image,
+                                  std::vector<cv::Vec4f> lines_segments,
+                                  std::vector<int> *line_id_by_vp = 0);
+
+    double getFocus();
+    cv::Mat1f getRotationMatrix();
+
+    private:
+      double focus_;
+      cv::Mat1f rotation_matrix_;
+
 
 };
 }

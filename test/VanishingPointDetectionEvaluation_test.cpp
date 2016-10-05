@@ -22,8 +22,8 @@ public:
   MOCK_VPD(){};
   std::vector<cv::Point2f> applyVPDetector(
                                 cv::Mat image,
-                                std::vector<int> *line_id_by_vp = 0,
-                                std::vector<cv::Vec4f> *lines_segments = 0 ){
+                                std::vector<cv::Vec4f> lines_segments,
+                                std::vector<int> *line_id_by_vp = 0){
 
     float width = image.cols;
     float height = image.rows;
@@ -35,7 +35,7 @@ public:
       cv::Point2f(width*1.2, height*0.2) };
 
     // mock line segments
-    (*lines_segments) = {
+    lines_segments = {
         cv::Vec4f(out_points[0].x, out_points[0].y, 100,100),
         cv::Vec4f(out_points[0].x, out_points[0].y, 30,40),
         cv::Vec4f(out_points[0].x, out_points[0].y, 120,200),
