@@ -364,7 +364,9 @@ std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
 
 std::vector<int> labelVanishingPointByDirection(
                                       std::vector<cv::Point2f> vps,
-                                      cv::Point2f center = cv::Point2f(0,0)){
+                                      cv::Point2f center){
+
+  
   // TODO implement the direction classification by image center point
 
   return std::vector<int>();
