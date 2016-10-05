@@ -52,7 +52,9 @@ std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
                                 std::vector<int> &line_cluster,
                                 double threshold = 0.1);
 
-// std::vector<cv::Point2f>
+std::vector<int> labelVanishingPointByDirection(
+                                      std::vector<cv::Point2f> vps,
+                                      cv::Point2f center = cv::Point2f(0,0));
 
 
 }
