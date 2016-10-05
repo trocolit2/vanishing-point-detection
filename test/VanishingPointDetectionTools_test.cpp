@@ -367,3 +367,9 @@ BOOST_AUTO_TEST_CASE(MACRO_TIME_COUNT_testCase){
   BOOST_CHECK_CLOSE(cumulate_time[1]/times - gt_time_session[1]/times,
                     epslon , 5);
 }
+
+BOOST_AUTO_TEST_CASE(calcAngleSegment_testCase){
+
+  std::vector<cv::Vec4f>  segments = {cv::Vec4f(0,0,0,0)};
+
+}
