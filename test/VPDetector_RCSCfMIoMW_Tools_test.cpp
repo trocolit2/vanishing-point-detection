@@ -499,36 +499,36 @@ BOOST_AUTO_TEST_CASE(RANSAC_controled_testCase){
     }
 
     std::vector<int> lines_cluster;
-    std::vector<cv::Point2f> vps = RANSAC(segments, lines, 500, lines_cluster);
+    std::vector<cv::Point2f> vps = RANSAC(segments, lines, 250, lines_cluster);
 
     BOOST_CHECK_CLOSE(gt_vp[k].x, vps[2].x, 0.01);
     BOOST_CHECK_CLOSE(gt_vp[k].y, vps[2].y, 0.01);
 
-  //   std::cout << cv::Mat(lines_cluster).t() << std::endl;
-  //   for (uint i = 0; i < segments.size(); i++) {
-  //     cv::Scalar color (255, 255, 255);
-  //     if(lines_cluster[i] == 0){
-  //       color =  cv::Scalar(255, 0, 0);
-  //     }else if(lines_cluster[i] == 1){
-  //       color =  cv::Scalar(0, 255, 0);
-  //     }else if(lines_cluster[i] == 2){
-  //       color =  cv::Scalar(0, 0, 255);
-  //     }
-  //     cv::line( image,
-  //             cv::Point2f(segments[i][0] + center_point.x, segments[i][1] + center_point.y),
-  //             cv::Point2f(segments[i][2] + center_point.x, segments[i][3] + center_point.y),
-  //             color, image.rows * 0.004);
-  //   }
-  //
-  //   std::cout << cv::Mat(vps) << std::endl;
-  //   cv::Point2f vp_check = checkVPTriangle(vps[0], vps[1], cv::Point2f(0,0));
-  //   std::cout << vp_check << std::endl;
-  //
-  //   for (uint i = 0; i < vps.size(); i++)
-  //     cv::circle( image, vps[i] + center_point, image.rows * 0.004, cv::Scalar(255,255), -1);
-  //
-  //   cv::imshow("out", image);
-  //   cv::waitKey();
-  //   image = cv::Mat3b::zeros(1000,1000);
+    // std::cout << cv::Mat(lines_cluster).t() << std::endl;
+    // for (uint i = 0; i < segments.size(); i++) {
+    //   cv::Scalar color (255, 255, 255);
+    //   if(lines_cluster[i] == 0){
+    //     color =  cv::Scalar(255, 0, 0);
+    //   }else if(lines_cluster[i] == 1){
+    //     color =  cv::Scalar(0, 255, 0);
+    //   }else if(lines_cluster[i] == 2){
+    //     color =  cv::Scalar(0, 0, 255);
+    //   }
+    //   cv::line( image,
+    //           cv::Point2f(segments[i][0] + center_point.x, segments[i][1] + center_point.y),
+    //           cv::Point2f(segments[i][2] + center_point.x, segments[i][3] + center_point.y),
+    //           color, image.rows * 0.004);
+    // }
+    //
+    // std::cout << cv::Mat(vps) << std::endl;
+    // cv::Point2f vp_check = checkVPTriangle(vps[0], vps[1], cv::Point2f(0,0));
+    // std::cout << vp_check << std::endl;
+    //
+    // for (uint i = 0; i < vps.size(); i++)
+    //   cv::circle( image, vps[i] + center_point, image.rows * 0.004, cv::Scalar(255,255), -1);
+    //
+    // cv::imshow("out", image);
+    // cv::waitKey();
+    // image = cv::Mat3b::zeros(1000,1000);
   }
 }
