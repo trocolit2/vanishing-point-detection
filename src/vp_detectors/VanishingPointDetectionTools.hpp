@@ -73,4 +73,6 @@ cv::Point3f horizonLineEstimation(cv::Point2f zenith,
                                   std::vector<int> lines_by_vp,
                                   cv::Point3f *horizon_without_zenith = 0);
 
+double calcAngleSegment(cv::Vec4f segment);
+
 }

@@ -230,9 +230,13 @@ double normalizedMaxDistanceBetweenHorizonLines(  cv::Point3f horizon_line,
   return max_distance/( (double) image_size.height);
 }
 
+double calcAngleSegment(cv::Vec4f segment){
 
+  // (x1 * x2 + y1 * y2) / ( sqrt(x1*x1 + y1*y1) * sqrt(x2*x2 + y2*y2) )
+  double arc =  sqrt(segment[0]*segment[0] + segment[1]*segment[1]);
+  arc *=  sqrt(segment[2]*segment[2] + segment[3]*segment[3]);
+  arc = (segment[0]*segment[1] + segment[2]*segment[3]) / arc;
 
-
-
-
+  return acos(arc);
+}
 }
