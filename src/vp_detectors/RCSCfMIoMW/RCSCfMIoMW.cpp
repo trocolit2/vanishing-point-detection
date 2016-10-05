@@ -1,14 +1,15 @@
 #include "RCSCfMIoMW.hpp"
+#include "Tools.hpp"
 #include <VanishingPointDetectionTools.hpp>
 
 namespace vanishing_point{
 
-RCSCfMIoMW::RCSCfMIoMW(){
+RCSCfMIoMW::RCSCfMIoMW(uint ransac_iterations, double error_threshold){
   focus_ = 0;
   rotation_matrix_ = 0;
-
+  ransac_iterations_ = ransac_iterations;
+  error_threshold_ = error_threshold;
 }
-
 
 std::vector<cv::Point2f> RCSCfMIoMW::applyVPDetector(
                           cv::Mat image,
@@ -22,9 +23,11 @@ std::vector<cv::Point2f> RCSCfMIoMW::applyVPDetector(
     lines[i] = defineEuclidianLineBy2Points(initial_point, end_point);
   }
 
+  std::vector<int> line_cluster;
+  std::vector<cv::Point2f> vps = RANSAC(lines_segments, lines,
+     ransac_iterations_, line_cluster, error_threshold_);
 
-
-  return std::vector<cv::Point2f>();
+  return vps;
 }
 
 double RCSCfMIoMW::getFocus(){
