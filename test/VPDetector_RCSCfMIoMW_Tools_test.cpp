@@ -532,3 +532,18 @@ BOOST_AUTO_TEST_CASE(RANSAC_controled_testCase){
     // image = cv::Mat3b::zeros(1000,1000);
   }
 }
+
+BOOST_AUTO_TEST_CASE(Label_VPS_testCase){
+
+  cv::Mat3b image = cv::Mat3b::zeros(1000,1000);
+  cv::Point2f center(image.rows/2, image.cols/2);
+  std::vector< std::vector<cv::Point2f> > vps(1);
+  vps[0] = { cv::Point2f(1.0, 0.5), cv::Point2f(0, 0.5), cv::Point2f(0.5, 0.9)};
+
+  for (uint i = 0; i < vps.size(); i++) {
+    std::vector<int> label = labelVanishingPointByDirection(vps[0], center);
+    std::cout << "LABELs " << cv::Mat(label).t() << std::endl;
+    std::vector<cv::Point2f> new_vps;
+  }
+
+}
