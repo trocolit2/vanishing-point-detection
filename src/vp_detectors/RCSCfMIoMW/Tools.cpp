@@ -364,12 +364,23 @@ std::vector<cv::Point2f> RANSAC(std::vector<cv::Vec4f> segments,
 
 std::vector<int> labelVanishingPointByDirection(
                                       std::vector<cv::Point2f> vps,
-                                      cv::Point2f center){
+                                      cv::Point2f center ){
 
-  
-  // TODO implement the direction classification by image center point
-
-  return std::vector<int>();
+  double min_distance = M_PI;
+  int vertical_index = -1;
+  for (uint i = 0; i < vps.size(); i++) {
+    cv::Vec4f segment(center.x, center.y, vps[i].x, vps[i].y);
+    double angle = calcAngleSegment(segment);
+    double local_differ = angle - M_PI_2;
+    if( local_differ < min_distance){
+      min_distance = local_differ;
+      vertical_index = i;
+    }
+  }
+  std::vector<int> label = {(vertical_index+2)%3,
+                            (vertical_index)%3,
+                            (vertical_index+1)%3};
+  return label;
 }
 
 }
