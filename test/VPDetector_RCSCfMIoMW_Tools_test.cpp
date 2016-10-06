@@ -537,13 +537,38 @@ BOOST_AUTO_TEST_CASE(Label_VPS_testCase){
 
   cv::Mat3b image = cv::Mat3b::zeros(1000,1000);
   cv::Point2f center(image.rows/2, image.cols/2);
-  std::vector< std::vector<cv::Point2f> > vps(1);
-  vps[0] = { cv::Point2f(1.0, 0.5), cv::Point2f(0, 0.5), cv::Point2f(0.5, 0.9)};
+  std::vector< std::vector<cv::Point2f> > vps(2);
+  vps[0] = { cv::Point2f(1.0, 0.5),
+             cv::Point2f(0.0, 0.5),
+             cv::Point2f(0.5, 0.9) };
+  vps[1] = { cv::Point2f(0.9, 0.45),
+             cv::Point2f(0.45, 0.05),
+             cv::Point2f(0.2, 0.55) };
+
+  std::vector< std::vector<int> > gt_label(2);
+  gt_label[0] = {1, 2, 0};
+  gt_label[1] = {2, 1, 0};
+
 
   for (uint i = 0; i < vps.size(); i++) {
-    std::vector<int> label = labelVanishingPointByDirection(vps[0], center);
-    std::cout << "LABELs " << cv::Mat(label).t() << std::endl;
-    std::vector<cv::Point2f> new_vps;
+    std::vector<int> label = labelVanishingPointByDirection(
+                                              vps[i], cv::Point2f( 0.5, 0.5));
+
+  BOOST_CHECK_EQUAL(gt_label[i][0], label[0]);
+  BOOST_CHECK_EQUAL(gt_label[i][1], label[1]);
+  BOOST_CHECK_EQUAL(gt_label[i][2], label[2]);
+
+    // DEBUG
+    // std::vector<cv::Point2f> new_vps(vps[i].size());
+    // new_vps[0] = vps[i][label[0]] * image.rows;
+    // new_vps[1] = vps[i][label[1]] * image.rows;
+    // new_vps[2] = vps[i][label[2]] * image.rows;
+    // std::cout << "LABELs " << cv::Mat(label).t() << std::endl;
+    // std::cout<<" new points "<< cv::Mat(new_vps) << std::endl;
+    // image = drawOrthogonalVP(image, new_vps, center);
+    // cv::imshow("out", image);
+    // cv::waitKey();
+    // image = cv::Mat3b::zeros(1000,1000);
   }
 
 }
