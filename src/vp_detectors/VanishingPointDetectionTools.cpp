@@ -1,6 +1,8 @@
 #include <VanishingPointDetectionTools.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
+#include <cmath>
+
 namespace vanishing_point {
 
 cv::Mat drawOrthogonalVP(cv::Mat image, std::vector<cv::Point2f> points,
@@ -233,10 +235,11 @@ double normalizedMaxDistanceBetweenHorizonLines(  cv::Point3f horizon_line,
 double calcAngleSegment(cv::Vec4f segment){
 
   // (x1 * x2 + y1 * y2) / ( sqrt(x1*x1 + y1*y1) * sqrt(x2*x2 + y2*y2) )
-  double arc =  sqrt(segment[0]*segment[0] + segment[1]*segment[1]);
-  arc *=  sqrt(segment[2]*segment[2] + segment[3]*segment[3]);
-  arc = (segment[0]*segment[1] + segment[2]*segment[3]) / arc;
+  double slope =  segment[1] - segment[3] / (segment[0] - segment[2]);
+  double angle = atan(slope);
 
-  return acos(arc);
+  if (angle < 0 && angle > -M_PI_2 )
+    angle = angle-M_PI_2;
+  return fabs(angle);
 }
 }
