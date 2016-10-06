@@ -366,20 +366,32 @@ std::vector<int> labelVanishingPointByDirection(
                                       std::vector<cv::Point2f> vps,
                                       cv::Point2f center ){
 
+  // determine vertical vp
   double min_distance = M_PI;
   int vertical_index = -1;
   for (uint i = 0; i < vps.size(); i++) {
     cv::Vec4f segment(center.x, center.y, vps[i].x, vps[i].y);
     double angle = calcAngleSegment(segment);
-    double local_differ = angle - M_PI_2;
+    double local_differ = fabs(angle - M_PI_2);
     if( local_differ < min_distance){
       min_distance = local_differ;
       vertical_index = i;
     }
   }
-  std::vector<int> label = {(vertical_index+2)%3,
-                            (vertical_index)%3,
-                            (vertical_index+1)%3};
+
+  // determine x directoion vp
+  std::vector<int> horizontal_vp;
+  for (uint i = 0; i < vps.size(); i++)
+    if(i != vertical_index)
+      horizontal_vp.push_back(i);
+
+  if(vps[horizontal_vp[1]].x < center.x){
+    int swap = horizontal_vp[0];
+    horizontal_vp[0] = horizontal_vp[1];
+    horizontal_vp[1] = swap;
+  }
+
+  std::vector<int> label = {horizontal_vp[0], vertical_index, horizontal_vp[1]};
   return label;
 }
 
