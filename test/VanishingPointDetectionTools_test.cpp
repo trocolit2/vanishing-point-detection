@@ -6,6 +6,7 @@
 #include <boost/test/unit_test_suite.hpp>
 
 #include <iostream>
+#include <cmath>
 #include <opencv2/highgui/highgui.hpp>
 
 // #include <VanishingPointDetection.hpp>
@@ -370,6 +371,17 @@ BOOST_AUTO_TEST_CASE(MACRO_TIME_COUNT_testCase){
 
 BOOST_AUTO_TEST_CASE(calcAngleSegment_testCase){
 
-  std::vector<cv::Vec4f>  segments = {cv::Vec4f(0,0,0,0)};
+  std::vector<cv::Vec4f>  segments = {cv::Vec4f(0,0,1,1), cv::Vec4f(0,0,-1,-1),
+                cv::Vec4f(0,0,0,1), cv::Vec4f(0,0, 1,-1), cv::Vec4f(0,0,-1,1),
+                cv::Vec4f(0,0,0,-1), cv::Vec4f(0,0,1,0), cv::Vec4f(0,0,-1,0)};
 
+  std::vector<double> gt_angle = {0.785398, 0.785398, 1.5708, 2.35619, 2.35619,
+    1.5708, 0.0, 0.0};
+
+  for (uint i = 0; i < segments.size(); i++) {
+    double out = calcAngleSegment(segments[i]);
+    BOOST_CHECK_CLOSE(gt_angle[i], out, 0.01);
+    // DEBUG
+    // std::cout << "index " << segments[i] << " angle " << out << std::endl;
+  }
 }
